@@ -2,10 +2,10 @@ import { Container } from '@/components/ui/Container';
 import { INSTAGRAM_PROFILE_URL, SITE_NAME } from '@/lib/site';
 
 const footerLinks = [
-  { href: '#entrega', label: 'Entrega' },
-  { href: '#perguntas-frequentes', label: 'Perguntas frequentes' },
-  { href: '#privacidade', label: 'Privacidade' },
-  { href: '#termos', label: 'Termos de uso' },
+  { href: '/envio-nacional', label: 'Entrega' },
+  { href: '/perguntas-frequentes', label: 'Perguntas frequentes' },
+  { href: '/privacidade', label: 'Privacidade' },
+  { href: '/termos', label: 'Termos de uso' },
 ];
 
 export function SiteFooter() {

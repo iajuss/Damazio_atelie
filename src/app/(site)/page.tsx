@@ -10,7 +10,7 @@ export default function HomePage() {
           <p className="eyebrow">Damazio Atelier</p>
           <h1 id="titulo-principal">Peças que contam histórias</h1>
           <p>Conheça o universo do atelier e encontre uma peça que faça sentido para você.</p>
-          <Button href="#catalogo">Conheça o catálogo</Button>
+          <Button href="/catalogo">Solicitar orçamento</Button>
         </Container>
       </section>
       <section id="catalogo" className="content-section" aria-labelledby="titulo-catalogo">

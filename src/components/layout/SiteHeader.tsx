@@ -24,7 +24,7 @@ export function SiteHeader() {
         <button
           className="menu-toggle"
           type="button"
-          aria-label="Abrir menu de navegação"
+          aria-label={isOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
           aria-expanded={isOpen}
           aria-controls="navegacao-principal"
           onClick={() => setIsOpen((open) => !open)}

@@ -40,6 +40,15 @@ describe('LineCard', () => {
     );
     expect(screen.getByRole('img', { name: /bordados em roupas/i })).toBeInTheDocument();
   });
+
+  it('exibe mídia pública HTTPS sem depender de uma origem remota configurada no Next', () => {
+    render(<LineCard line={{ ...line, coverImage: 'https://media.example.test/bordado.jpg' }} />);
+
+    expect(screen.getByRole('img', { name: /bordados em roupas/i })).toHaveAttribute(
+      'src',
+      'https://media.example.test/bordado.jpg',
+    );
+  });
 });
 
 describe('ProductCard', () => {
@@ -53,5 +62,14 @@ describe('ProductCard', () => {
       '/produtos/camisa-bordada',
     );
     expect(screen.queryByText(/R\$|preço|valor/i)).not.toBeInTheDocument();
+  });
+
+  it('exibe mídia pública HTTPS do produto sem depender do otimizador remoto', () => {
+    render(<ProductCard product={{ ...product, media: [{ ...product.media[0], url: 'https://media.example.test/camisa.jpg' }] }} />);
+
+    expect(screen.getByRole('img', { name: /camisa com bordado delicado/i })).toHaveAttribute(
+      'src',
+      'https://media.example.test/camisa.jpg',
+    );
   });
 });

@@ -24,10 +24,16 @@ async function publishedOrFallback<T>(load: () => Promise<T[]>, fallback: T[]): 
   }
 }
 
+function mergeEditorialLines(publishedLines: CatalogLine[]): CatalogLine[] {
+  const publishedBySlug = new Map(publishedLines.map((line) => [line.slug, line]));
+
+  return fallbackLines.map((fallbackLine) => publishedBySlug.get(fallbackLine.slug) ?? fallbackLine);
+}
+
 export async function getHomeContent(): Promise<HomeContent> {
-  const [lines, products] = await Promise.all([
+  const [publishedLines, products] = await Promise.all([
     publishedOrFallback(listPublishedLines, fallbackLines),
     publishedOrFallback(listPublishedProducts, fallbackProducts),
   ]);
-  return { hero: { eyebrow: 'Damazio Atelier', title: 'Peças que contam histórias', description: 'Bordados, crochê e presentes autorais feitos sob encomenda para transformar afeto em memória.' }, lines: lines.slice(0, 4), products: products.slice(0, 3) };
+  return { hero: { eyebrow: 'Damazio Atelier', title: 'Peças que contam histórias', description: 'Bordados, crochê e presentes autorais feitos sob encomenda para transformar afeto em memória.' }, lines: mergeEditorialLines(publishedLines), products: products.slice(0, 3) };
 }

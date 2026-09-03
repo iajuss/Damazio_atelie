@@ -2,9 +2,15 @@ import type { CatalogProduct } from '@/features/catalog/types';
 import type { InquiryInput, InquiryValidation, ValidInquiryInput } from './types';
 
 const limits = { name: 160, contact: 200, city: 120, occasion: 160, description: 4000, answer: 4000 } as const;
+const answerKeyPattern = /^[a-z][a-z0-9_]{0,63}$/;
+const maxAnswerFields = 20;
 
 function normalize(value: unknown): string {
   return typeof value === 'string' ? value.normalize('NFKC').replace(/\s+/g, ' ').trim() : '';
+}
+
+export function normalizeProductSlug(value: unknown): string {
+  return normalize(value).toLowerCase();
 }
 
 function validateRequired(errors: Record<string, string>, key: keyof typeof limits | 'state', value: string): void {
@@ -26,7 +32,8 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   const state = normalize(input.state).toUpperCase();
   const occasion = normalize(input.occasion);
   const description = normalize(input.description);
-  const answers = Object.fromEntries(Object.entries(input.answers ?? {}).map(([key, value]) => [key, normalize(value)]));
+  const answerEntries = Object.entries(input.answers ?? {});
+  const answers = Object.fromEntries(answerEntries.map(([key, value]) => [key, normalize(value)]));
 
   validateRequired(errors, 'name', name);
   validateRequired(errors, 'contact', contact);
@@ -36,7 +43,11 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   if (occasion.length > limits.occasion) errors.occasion = 'O texto informado é maior do que o permitido.';
   if (description.length > limits.description) errors.description = 'O texto informado é maior do que o permitido.';
 
-  if (!product || product.slug !== normalize(input.productSlug)) {
+  if (answerEntries.length > maxAnswerFields || answerEntries.some(([key, value]) => !answerKeyPattern.test(key) || normalize(value).length > limits.answer)) {
+    errors.answers = 'Confira os campos de personalização informados.';
+  }
+
+  if (!product || product.slug !== normalizeProductSlug(input.productSlug)) {
     errors.productSlug = 'A peça selecionada não foi encontrada.';
   } else if (product.availability === 'unavailable') {
     errors.productSlug = 'Esta peça não está disponível para solicitação no momento.';
@@ -45,7 +56,7 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
     for (const [key, answer] of Object.entries(answers)) {
       const field = fields.get(key);
       if (!field) {
-        errors[`answers.${key}`] = 'Este campo de personalização não pertence à peça selecionada.';
+        errors.answers = 'Confira os campos de personalização informados.';
       } else if (!answer && field.required) {
         errors[`answers.${key}`] = 'Este campo é obrigatório.';
       } else if (answer.length > limits.answer) {
@@ -62,7 +73,7 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   if (Object.keys(errors).length > 0) return { success: false, errors };
 
   const data: ValidInquiryInput = {
-    productSlug: normalize(input.productSlug), name, contact, city, state, occasion: occasion || null,
+    productSlug: normalizeProductSlug(input.productSlug), name, contact, city, state, occasion: occasion || null,
     description: description || null, answers, privacyAccepted: true, attachments: input.attachments,
   };
   return { success: true, data };

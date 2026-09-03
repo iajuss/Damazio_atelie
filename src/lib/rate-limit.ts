@@ -1,10 +1,14 @@
 type RateLimitEntry = { count: number; resetAt: number };
 
-export function createRateLimiter({ limit = 5, windowMs = 60_000 } = {}) {
+export function createRateLimiter({ limit = 5, windowMs = 60_000, maxEntries = 10_000 } = {}) {
   const entries = new Map<string, RateLimitEntry>();
   return (key: string, now = Date.now()): boolean => {
+    for (const [entryKey, entry] of entries) {
+      if (entry.resetAt <= now) entries.delete(entryKey);
+    }
     const current = entries.get(key);
     if (!current || current.resetAt <= now) {
+      if (entries.size >= maxEntries) return false;
       entries.set(key, { count: 1, resetAt: now + windowMs });
       return true;
     }

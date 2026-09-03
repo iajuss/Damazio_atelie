@@ -39,6 +39,32 @@ test('recusa estouro de taxa e origem não confiável', async () => {
   expect((await secured(hostile)).status).toBe(400);
 });
 
+test('não deriva a origem permitida da URL recebida quando não há configuração', async () => {
+  const post = createInquiryPostHandler({ allowedOrigins: [], rateLimit: () => true, loadProduct: async () => product, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  const response = await post(request(form()));
+  expect(response.status).toBe(400);
+});
+
+test('limita answers antes de analisar JSON e não reflete chave arbitrária no erro', async () => {
+  let productWasLoaded = false;
+  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true, loadProduct: async () => { productWasLoaded = true; return product; }, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  const oversized = await post(request(form({ answers: JSON.stringify({ referencia: 'x'.repeat(17_000) }) })));
+  expect(oversized.status).toBe(400);
+  expect(productWasLoaded).toBe(false);
+
+  const arbitraryKey = 'nao_reflita_esta_chave_de_atacante_comprida_demais_123456789';
+  const reflected = await post(request(form({ answers: JSON.stringify({ [arbitraryKey]: 'x' }) })));
+  expect(await reflected.text()).not.toContain(arbitraryKey);
+});
+
+test('normaliza o slug antes de consultar o produto', async () => {
+  let requestedSlug = '';
+  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true, loadProduct: async (slug) => { requestedSlug = slug; return product; }, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  const response = await post(request(form({ productSlug: '  TOALHA-BORDADA  ' })));
+  expect(response.status).toBe(201);
+  expect(requestedSlug).toBe('toalha-bordada');
+});
+
 test('não oferece leitura anônima de referências privadas', async () => {
   const response = await GET();
   expect(response.status).toBe(404);

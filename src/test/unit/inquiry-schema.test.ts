@@ -44,7 +44,7 @@ describe('validação de solicitação', () => {
 
   it('rejeita respostas de personalização que não pertencem ao produto e opções inválidas', () => {
     expect(validateInquiryInput(validInput({ answers: { nome_bordado: 'Ana', tamanho: 'M' } }), product)).toMatchObject({
-      success: false, errors: { 'answers.tamanho': expect.any(String) },
+      success: false, errors: { answers: expect.any(String) },
     });
     expect(validateInquiryInput(validInput({ answers: { nome_bordado: 'Ana', cor: 'azul' } }), product)).toMatchObject({
       success: false, errors: { 'answers.cor': expect.any(String) },

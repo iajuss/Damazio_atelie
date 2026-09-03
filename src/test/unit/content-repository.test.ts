@@ -50,8 +50,33 @@ describe('getHomeContent', () => {
     await expect(getCatalogContent()).resolves.toEqual({ lines: [], products: [] });
   });
 
+  it('recorre ao catálogo editorial determinístico se a consulta publicada falhar', async () => {
+    listPublishedLines.mockRejectedValue(new Error('Falha remota'));
+    listPublishedProducts.mockRejectedValue(new Error('Falha remota'));
+
+    const content = await getCatalogContent();
+
+    expect(content.lines.map((line) => line.slug)).toEqual([
+      'bordados-em-roupas',
+      'enxovais-e-toalhas',
+      'bolsas-de-croche',
+      'presentes-e-embalagens',
+    ]);
+    expect(content.products.map((product) => product.slug)).toEqual([
+      'camisa-bordada',
+      'toalha-personalizada',
+      'bolsa-de-croche',
+    ]);
+  });
+
   it('não expõe um slug ausente na consulta direta de catálogo configurado', async () => {
     await expect(getCatalogProductBySlug('camisa-bordada')).resolves.toBeNull();
+  });
+
+  it('recorre ao produto editorial determinístico se a consulta direta falhar', async () => {
+    getPublishedProductBySlug.mockRejectedValue(new Error('Falha remota'));
+
+    await expect(getCatalogProductBySlug('camisa-bordada')).resolves.toMatchObject({ slug: 'camisa-bordada' });
   });
 
   it('usa referências editoriais apenas sem a configuração pública local', async () => {

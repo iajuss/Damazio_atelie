@@ -1,19 +1,12 @@
 import type { MetadataRoute } from 'next';
+import { getCatalogContent } from '@/features/content/repository';
 import { absoluteUrl } from '@/lib/site';
 
-const publicPaths = [
+export const dynamic = 'force-dynamic';
+
+const staticPublicPaths = [
   '/',
   '/catalogo',
-  '/catalogo/bordados-em-roupas',
-  '/catalogo/enxovais-e-toalhas',
-  '/catalogo/bolsas-de-croche',
-  '/catalogo/presentes-e-embalagens',
-  '/produtos/camisa-bordada',
-  '/produtos/toalha-personalizada',
-  '/produtos/bolsa-de-croche',
-  '/solicitar-orcamento/camisa-bordada',
-  '/solicitar-orcamento/toalha-personalizada',
-  '/solicitar-orcamento/bolsa-de-croche',
   '/sobre',
   '/como-funciona',
   '/envio-nacional',
@@ -23,11 +16,17 @@ const publicPaths = [
   '/termos',
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return publicPaths.map((path) => ({
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { lines, products } = await getCatalogContent();
+  const publicPaths = [
+    ...staticPublicPaths,
+    ...lines.map((line) => `/catalogo/${line.slug}`),
+    ...products.flatMap((product) => [`/produtos/${product.slug}`, `/solicitar-orcamento/${product.slug}`]),
+  ];
+
+  return [...new Set(publicPaths)].map((path) => ({
     url: absoluteUrl(path),
     changeFrequency: 'monthly',
     priority: path === '/' ? 1 : path === '/catalogo' ? 0.9 : 0.7,
   }));
 }
-

@@ -34,6 +34,10 @@ function usesEditorialFallback(): boolean {
   }
 }
 
+function editorialCatalog(): Pick<HomeContent, 'lines' | 'products'> {
+  return { lines: fallbackLines, products: editorialProducts().filter((product) => product.availability !== 'unavailable') };
+}
+
 export async function getHomeContent(): Promise<HomeContent> {
   const catalog = await getCatalogContent();
   return { hero: { eyebrow: 'Damazio Atelier', title: 'Peças que contam histórias', description: 'Bordados, crochê e presentes autorais feitos sob encomenda para transformar afeto em memória.' }, lines: catalog.lines, products: catalog.products.slice(0, 3) };
@@ -41,11 +45,15 @@ export async function getHomeContent(): Promise<HomeContent> {
 
 export async function getCatalogContent(): Promise<Pick<HomeContent, 'lines' | 'products'>> {
   if (usesEditorialFallback()) {
-    return { lines: fallbackLines, products: editorialProducts().filter((product) => product.availability !== 'unavailable') };
+    return editorialCatalog();
   }
 
-  const [lines, products] = await Promise.all([listPublishedLines(), listPublishedProducts()]);
-  return { lines, products };
+  try {
+    const [lines, products] = await Promise.all([listPublishedLines(), listPublishedProducts()]);
+    return { lines, products };
+  } catch {
+    return editorialCatalog();
+  }
 }
 
 export async function getCatalogProductBySlug(slug: string): Promise<CatalogProduct | null> {
@@ -53,5 +61,9 @@ export async function getCatalogProductBySlug(slug: string): Promise<CatalogProd
     return editorialProducts().find((product) => product.slug === slug) ?? null;
   }
 
-  return getPublishedProductBySlug(slug);
+  try {
+    return await getPublishedProductBySlug(slug);
+  } catch {
+    return editorialProducts().find((product) => product.slug === slug) ?? null;
+  }
 }

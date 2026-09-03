@@ -11,6 +11,7 @@ export default defineConfig({
     env: {
       ...process.env,
       E2E_TEST_UNAVAILABLE_PRODUCT: 'true',
+      E2E_TEST_ERROR_BOUNDARY: 'true',
       NEXT_PUBLIC_SUPABASE_URL: '',
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: '',
       SUPABASE_SERVICE_ROLE_KEY: '',

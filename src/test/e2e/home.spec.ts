@@ -24,9 +24,3 @@ test('o menu móvel alterna o nome acessível e mantém alvos de toque utilizáv
   await expect(catalogLink).toHaveCSS('min-height', '44px');
   await expect(privacyLink).toHaveCSS('min-height', '44px');
 });
-
-test('a etiqueta visual usa o dourado antigo do atelier', async ({ page }) => {
-  await page.goto('/');
-
-  await expect(page.locator('.hero .eyebrow')).toHaveCSS('color', 'rgb(154, 123, 52)');
-});

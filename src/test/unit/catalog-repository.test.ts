@@ -33,6 +33,29 @@ type ProductRow = {
   }>;
 };
 
+type ProductLineRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  cover_image: string | null;
+  sort_order: number;
+  published: boolean;
+};
+
+function productLineRow(overrides: Partial<ProductLineRow> = {}): ProductLineRow {
+  return {
+    id: 'line-1',
+    slug: 'enxovais',
+    name: 'Enxovais personalizados',
+    description: 'Peças bordadas para a casa.',
+    cover_image: 'https://cdn.example/enxovais.jpg',
+    sort_order: 1,
+    published: true,
+    ...overrides,
+  };
+}
+
 function productRow(overrides: Partial<ProductRow> = {}): ProductRow {
   return {
     id: 'product-1',
@@ -56,20 +79,42 @@ function productRow(overrides: Partial<ProductRow> = {}): ProductRow {
   };
 }
 
-function repositoryWithProducts(rows: ProductRow[]) {
-  const query = {
-    select: () => query,
-    eq: () => query,
-    neq: () => query,
-    order: () => Promise.resolve({ data: rows, error: null }),
-  };
+function repositoryWithCatalog({
+  productRows = [],
+  productLineRows = [],
+}: {
+  productRows?: ProductRow[];
+  productLineRows?: ProductLineRow[];
+}) {
+  function queryFor(table: 'products' | 'product_lines') {
+    let requestedSlug: string | undefined;
+    const rows = table === 'products' ? productRows : productLineRows;
+    const query = {
+      select: () => query,
+      eq: (column: string, value: unknown) => {
+        if (column === 'slug') {
+          requestedSlug = String(value);
+        }
+        return query;
+      },
+      neq: () => query,
+      order: () => Promise.resolve({ data: rows, error: null }),
+      limit: () => query,
+      maybeSingle: () => Promise.resolve({
+        data: rows.find((row) => row.slug === requestedSlug) ?? null,
+        error: null,
+      }),
+    };
 
-  return createCatalogRepository({ from: () => query } as never);
+    return query;
+  }
+
+  return createCatalogRepository({ from: queryFor } as never);
 }
 
 describe('catálogo público', () => {
   it('mapeia uma linha válida de produto para o DTO público ordenado', async () => {
-    const repository = repositoryWithProducts([productRow()]);
+    const repository = repositoryWithCatalog({ productRows: [productRow()] });
 
     await expect(repository.listPublishedProducts()).resolves.toEqual([
       {
@@ -93,16 +138,74 @@ describe('catálogo público', () => {
   });
 
   it('exclui produtos não publicados e indisponíveis mesmo se retornados pela fonte de dados', async () => {
-    const repository = repositoryWithProducts([
-      productRow(),
-      productRow({ id: 'product-2', slug: 'rascunho', published: false }),
-      productRow({ id: 'product-3', slug: 'pausado', availability: 'unavailable' }),
-      productRow({ id: 'product-4', slug: 'linha-oculta', product_line: { slug: 'oculta', published: false } }),
-    ]);
+    const repository = repositoryWithCatalog({
+      productRows: [
+        productRow(),
+        productRow({ id: 'product-2', slug: 'rascunho', published: false }),
+        productRow({ id: 'product-3', slug: 'pausado', availability: 'unavailable' }),
+        productRow({ id: 'product-4', slug: 'linha-oculta', product_line: { slug: 'oculta', published: false } }),
+      ],
+    });
 
     await expect(repository.listPublishedProducts()).resolves.toMatchObject([
       { id: 'product-1', slug: 'toalha-bordada' },
     ]);
     await expect(repository.listPublishedProducts()).resolves.toHaveLength(1);
+  });
+
+  it('lista somente linhas publicadas', async () => {
+    const repository = repositoryWithCatalog({
+      productLineRows: [
+        productLineRow(),
+        productLineRow({ id: 'line-2', slug: 'rascunho', published: false }),
+      ],
+    });
+
+    await expect(repository.listPublishedLines()).resolves.toEqual([
+      {
+        id: 'line-1',
+        slug: 'enxovais',
+        name: 'Enxovais personalizados',
+        description: 'Peças bordadas para a casa.',
+        coverImage: 'https://cdn.example/enxovais.jpg',
+        sortOrder: 1,
+      },
+    ]);
+  });
+
+  it('retorna a linha publicada correspondente ao slug', async () => {
+    const repository = repositoryWithCatalog({ productLineRows: [productLineRow()] });
+
+    await expect(repository.getPublishedLineBySlug('enxovais')).resolves.toEqual({
+      id: 'line-1',
+      slug: 'enxovais',
+      name: 'Enxovais personalizados',
+      description: 'Peças bordadas para a casa.',
+      coverImage: 'https://cdn.example/enxovais.jpg',
+      sortOrder: 1,
+    });
+  });
+
+  it('retorna null quando o slug de linha não existe', async () => {
+    const repository = repositoryWithCatalog({ productLineRows: [productLineRow()] });
+
+    await expect(repository.getPublishedLineBySlug('inexistente')).resolves.toBeNull();
+  });
+
+  it('retorna o produto publicado correspondente ao slug', async () => {
+    const repository = repositoryWithCatalog({ productRows: [productRow()] });
+
+    await expect(repository.getPublishedProductBySlug('toalha-bordada')).resolves.toMatchObject({
+      id: 'product-1',
+      lineSlug: 'enxovais',
+      slug: 'toalha-bordada',
+      availability: 'available',
+    });
+  });
+
+  it('retorna null quando o slug de produto não existe', async () => {
+    const repository = repositoryWithCatalog({ productRows: [productRow()] });
+
+    await expect(repository.getPublishedProductBySlug('inexistente')).resolves.toBeNull();
   });
 });

@@ -1,5 +1,6 @@
 import { getPublishedProductBySlug, listPublishedLines, listPublishedProducts } from '@/features/catalog/repository';
 import type { CatalogLine, CatalogProduct } from '@/features/catalog/types';
+import { getPublicSupabaseEnv } from '@/lib/env';
 import type { HomeContent } from './types';
 
 const fallbackLines: CatalogLine[] = [
@@ -15,19 +16,13 @@ const fallbackProducts: CatalogProduct[] = [
   { id: 'bolsa', lineSlug: 'bolsas-de-croche', slug: 'bolsa-de-croche', name: 'Bolsa de crochê', description: 'Trama e acabamento para transformar o cotidiano.', materials: [], availability: 'limited', media: [], customizationFields: [] },
 ];
 
-async function publishedOrFallback<T>(load: () => Promise<T[]>, fallback: T[]): Promise<T[]> {
+function usesEditorialFallback(): boolean {
   try {
-    const content = await load();
-    return content.length > 0 ? content : fallback;
+    getPublicSupabaseEnv();
+    return false;
   } catch {
-    return fallback;
+    return true;
   }
-}
-
-function mergeEditorialLines(publishedLines: CatalogLine[]): CatalogLine[] {
-  const publishedBySlug = new Map(publishedLines.map((line) => [line.slug, line]));
-
-  return fallbackLines.map((fallbackLine) => publishedBySlug.get(fallbackLine.slug) ?? fallbackLine);
 }
 
 export async function getHomeContent(): Promise<HomeContent> {
@@ -36,21 +31,18 @@ export async function getHomeContent(): Promise<HomeContent> {
 }
 
 export async function getCatalogContent(): Promise<Pick<HomeContent, 'lines' | 'products'>> {
-  const [publishedLines, products] = await Promise.all([
-    publishedOrFallback(listPublishedLines, fallbackLines),
-    publishedOrFallback(listPublishedProducts, fallbackProducts),
-  ]);
-  return { lines: mergeEditorialLines(publishedLines), products };
+  if (usesEditorialFallback()) {
+    return { lines: fallbackLines, products: fallbackProducts };
+  }
+
+  const [lines, products] = await Promise.all([listPublishedLines(), listPublishedProducts()]);
+  return { lines, products };
 }
 
 export async function getCatalogProductBySlug(slug: string): Promise<CatalogProduct | null> {
-  try {
-    const publishedProduct = await getPublishedProductBySlug(slug);
-    if (publishedProduct) return publishedProduct;
-  } catch {
-    // O catálogo editorial mantém referências locais quando o serviço público não está configurado.
+  if (usesEditorialFallback()) {
+    return fallbackProducts.find((product) => product.slug === slug) ?? null;
   }
 
-  const { products } = await getCatalogContent();
-  return products.find((product) => product.slug === slug) ?? null;
+  return getPublishedProductBySlug(slug);
 }

@@ -64,4 +64,33 @@ describe('getHomeContent', () => {
     expect(content.lines).toHaveLength(4);
     expect(content.products.map((product) => product.slug)).toContain('camisa-bordada');
   });
+
+  it('oferece uma foto local para cada uma das quatro linhas no catálogo editorial', async () => {
+    getPublicSupabaseEnv.mockImplementation(() => {
+      throw new Error('Variáveis públicas ausentes');
+    });
+
+    const content = await getHomeContent();
+
+    expect(content.lines.map((line) => line.coverImage)).toEqual([
+      '/images/catalogo/camisa-bordada.jpeg',
+      '/images/catalogo/toalhas-personalizadas.jpeg',
+      '/images/catalogo/bolsa-croche.jpeg',
+      '/images/catalogo/presente-embalado.jpeg',
+    ]);
+  });
+
+  it('oferece uma foto local para cada inspiração de produto editorial', async () => {
+    getPublicSupabaseEnv.mockImplementation(() => {
+      throw new Error('Variáveis públicas ausentes');
+    });
+
+    const content = await getHomeContent();
+
+    expect(content.products.map((product) => product.media[0]?.url)).toEqual([
+      '/images/catalogo/camisa-bordada.jpeg',
+      '/images/catalogo/toalhas-personalizadas.jpeg',
+      '/images/catalogo/bolsa-croche.jpeg',
+    ]);
+  });
 });

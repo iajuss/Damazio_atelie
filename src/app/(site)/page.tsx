@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { getHomeContent } from '@/features/content/repository';
+import { publicPageMetadata } from '@/lib/site';
+
+export const metadata = publicPageMetadata('Início', 'Peças autorais sob encomenda para transformar afeto em memória.', '/');
 
 export default async function HomePage() {
   const content = await getHomeContent();
   return (
-    <main id="conteudo">
+    <main id="conteudo" tabIndex={-1}>
       <Hero {...content.hero} />
       <section id="linhas" className="content-section" aria-labelledby="titulo-linhas"><Container><p className="eyebrow">Quatro caminhos de criação</p><SectionHeading id="titulo-linhas">Encontre a forma do seu afeto</SectionHeading><div className="line-grid">{content.lines.map((line) => <LineCard key={line.id} line={line} />)}</div></Container></section>
       <section className="content-section editorial-products" aria-labelledby="titulo-produtos"><Container><p className="eyebrow">Peças que contam histórias</p><SectionHeading id="titulo-produtos">Inspirações para começar</SectionHeading><div className="product-grid">{content.products.map((product) => <ProductCard key={product.id} product={product} />)}</div></Container></section>

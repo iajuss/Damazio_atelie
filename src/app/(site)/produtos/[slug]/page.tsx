@@ -18,5 +18,5 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const product = await getCatalogProductBySlug(slug);
   if (!product) notFound();
 
-  return <main id="conteudo"><Container className="product-page"><ProductGallery media={product.media} productName={product.name} /><ProductDetails product={product} /></Container></main>;
+  return <main id="conteudo" tabIndex={-1}><Container className="product-page"><ProductGallery media={product.media} productName={product.name} /><ProductDetails product={product} /></Container></main>;
 }

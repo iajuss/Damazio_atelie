@@ -1,11 +1,12 @@
 'use client';
 
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import type { CatalogProduct } from '@/features/catalog/types';
 import type { InquiryResult } from '@/features/inquiries/types';
 import { CustomizationInput } from './CustomizationInput';
 import { InquiryConfirmation } from './InquiryConfirmation';
 import { ReferenceUpload } from './ReferenceUpload';
+import { ErrorSummary } from '@/components/ui/ErrorSummary';
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 type InquiryFormProps = { product: CatalogProduct; fetcher?: Fetcher };
@@ -23,10 +24,7 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
   const [submissionError, setSubmissionError] = useState('');
   const [result, setResult] = useState<InquiryResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const summaryRef = useRef<HTMLDivElement>(null);
   const fields = [...product.customizationFields].sort((a, b) => a.sortOrder - b.sortOrder);
-
-  useEffect(() => { if (Object.keys(errors).length > 0 || submissionError) summaryRef.current?.focus(); }, [errors, submissionError]);
 
   function fieldProps(name: 'name' | 'contact' | 'city' | 'state' | 'occasion' | 'description') {
     const error = errors[name];
@@ -86,7 +84,7 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
   const summaryMessages = [...new Set([submissionError, ...Object.values(errors)].filter(Boolean))];
   return <form className="inquiry-form" noValidate onSubmit={submit}>
     <input className="sr-only" type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-    {summaryMessages.length > 0 ? <div className="inquiry-form__errors" ref={summaryRef} role="alert" tabIndex={-1}><strong>Confira sua solicitação</strong><ul>{summaryMessages.map((message) => <li key={message}>{message}</li>)}</ul></div> : null}
+    {summaryMessages.length > 0 ? <ErrorSummary messages={summaryMessages} /> : null}
     <div className="inquiry-form__grid">
       <div className="inquiry-field"><label htmlFor="name">Seu nome *</label><input id="name" name="name" type="text" {...fieldProps('name')} />{errors.name ? <p id={inputErrorId('name')} className="inquiry-field__error">{errors.name}</p> : null}</div>
       <div className="inquiry-field"><label htmlFor="contact">Contato *</label><input id="contact" name="contact" type="text" autoComplete="email" {...fieldProps('contact')} />{errors.contact ? <p id={inputErrorId('contact')} className="inquiry-field__error">{errors.contact}</p> : null}</div>

@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import type { CatalogLine, CatalogProduct } from './types';
+import { publicPageMetadata } from '@/lib/site';
 
 export function catalogMetadata(): Metadata {
-  return { title: 'Catálogo | Damazio Atelier', description: 'Conheça as linhas e inspirações criadas sob encomenda pela Damazio Atelier.' };
+  return publicPageMetadata('Catálogo', 'Conheça as linhas e inspirações criadas sob encomenda pela Damazio Atelier.', '/catalogo');
 }
 
 export function lineMetadata(line: CatalogLine): Metadata {
-  return { title: `${line.name} | Damazio Atelier`, description: line.description ?? `Peças da linha ${line.name} da Damazio Atelier.` };
+  return publicPageMetadata(line.name, line.description ?? `Peças da linha ${line.name} da Damazio Atelier.`, `/catalogo/${line.slug}`);
 }
 
 export function productMetadata(product: CatalogProduct): Metadata {
-  return { title: `${product.name} | Damazio Atelier`, description: product.description ?? `Conheça ${product.name}, uma criação sob encomenda da Damazio Atelier.` };
+  return publicPageMetadata(product.name, product.description ?? `Conheça ${product.name}, uma criação sob encomenda da Damazio Atelier.`, `/produtos/${product.slug}`);
 }

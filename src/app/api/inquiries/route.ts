@@ -17,8 +17,10 @@ const MAX_ANSWER_FIELDS = 20;
 const MAX_ANSWER_KEY_LENGTH = 64;
 const MAX_ANSWER_VALUE_LENGTH = 4_000;
 
+const privateResponseHeaders = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow, noarchive' };
+
 function errorResponse(status: 400 | 404 | 413 | 429 | 500, code: string, message: string, fields?: Record<string, string>): Response {
-  return Response.json({ error: { code, message, ...(fields ? { fields } : {}) } }, { status, headers: { 'cache-control': 'no-store' } });
+  return Response.json({ error: { code, message, ...(fields ? { fields } : {}) } }, { status, headers: privateResponseHeaders });
 }
 
 function asText(data: FormData, key: string): string {
@@ -63,7 +65,7 @@ export function createInquiryPostHandler(dependencies: InquiryHandlerDependencie
       if (!validation.success) return errorResponse(400, 'VALIDACAO', 'Confira os campos informados.', validation.errors);
       const saveInquiry = dependencies.createInquiry ?? (await import('@/features/inquiries/service')).createInquiry;
       const result = await saveInquiry(input, product);
-      return Response.json(result, { status: 201, headers: { 'cache-control': 'no-store' } });
+      return Response.json(result, { status: 201, headers: privateResponseHeaders });
     } catch (error) {
       if (typeof error === 'object' && error && 'kind' in error) {
         const submission = error as { kind: string; errors?: Record<string, string> };

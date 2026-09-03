@@ -19,6 +19,7 @@ test('aceita multipart válido e retorna somente o protocolo público', async ()
   const response = await post(request(form()));
   await expect(response.json()).resolves.toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
   expect(response.status).toBe(201);
+  expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow, noarchive');
 });
 
 test('retorna erros de campos, bloqueia excesso e não disponibiliza leitura anônima de referências', async () => {
@@ -68,5 +69,6 @@ test('normaliza o slug antes de consultar o produto', async () => {
 test('não oferece leitura anônima de referências privadas', async () => {
   const response = await GET();
   expect(response.status).toBe(404);
+  expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow, noarchive');
   await expect(response.json()).resolves.toEqual({ error: { code: 'NAO_ENCONTRADO', message: 'Referências de clientes são privadas.' } });
 });

@@ -1,0 +1,53 @@
+import { describe, expect, it } from 'vitest';
+import { validateInquiryInput } from '@/features/inquiries/schema';
+import type { CatalogProduct } from '@/features/catalog/types';
+
+const product: CatalogProduct = {
+  id: 'product-1', lineSlug: 'enxovais', slug: 'toalha-bordada', name: 'Toalha bordada',
+  description: null, materials: [], availability: 'available', media: [],
+  customizationFields: [
+    { key: 'nome_bordado', label: 'Nome', type: 'text', required: true, options: [], helpText: null, sortOrder: 1 },
+    { key: 'cor', label: 'Cor', type: 'select', required: false, options: ['areia', 'rosé'], helpText: null, sortOrder: 2 },
+  ],
+};
+
+function validInput(overrides: Record<string, unknown> = {}) {
+  return {
+    productSlug: 'toalha-bordada', name: '  Ana   Silva ', contact: ' ana@example.com ', city: ' São Paulo ',
+    state: 'sp', privacyAccepted: true, answers: { nome_bordado: '  Ana  ' }, attachments: [], ...overrides,
+  };
+}
+
+describe('validação de solicitação', () => {
+  it('aceita os dados mínimos e normaliza textos antes de persistir', () => {
+    expect(validateInquiryInput(validInput(), product)).toEqual({
+      success: true,
+      data: expect.objectContaining({
+        productSlug: 'toalha-bordada', name: 'Ana Silva', contact: 'ana@example.com', city: 'São Paulo', state: 'SP',
+        answers: { nome_bordado: 'Ana' }, privacyAccepted: true,
+      }),
+    });
+  });
+
+  it.each([
+    ['name', { name: '' }], ['contact', { contact: '' }], ['city', { city: '' }],
+    ['state', { state: '' }], ['privacyAccepted', { privacyAccepted: false }],
+  ])('rejeita %s ausente', (field, overrides) => {
+    const result = validateInquiryInput(validInput(overrides), product);
+    expect(result).toMatchObject({ success: false, errors: { [field]: expect.any(String) } });
+  });
+
+  it('rejeita produto desconhecido ou indisponível', () => {
+    expect(validateInquiryInput(validInput(), null)).toMatchObject({ success: false, errors: { productSlug: expect.any(String) } });
+    expect(validateInquiryInput(validInput(), { ...product, availability: 'unavailable' })).toMatchObject({ success: false, errors: { productSlug: expect.any(String) } });
+  });
+
+  it('rejeita respostas de personalização que não pertencem ao produto e opções inválidas', () => {
+    expect(validateInquiryInput(validInput({ answers: { nome_bordado: 'Ana', tamanho: 'M' } }), product)).toMatchObject({
+      success: false, errors: { 'answers.tamanho': expect.any(String) },
+    });
+    expect(validateInquiryInput(validInput({ answers: { nome_bordado: 'Ana', cor: 'azul' } }), product)).toMatchObject({
+      success: false, errors: { 'answers.cor': expect.any(String) },
+    });
+  });
+});

@@ -18,6 +18,22 @@ test('o formulário mantém a experiência consultiva em viewport de 320px', asy
   await expect(page.getByText(/R\$|carrinho|checkout|pagamento/i)).toHaveCount(0);
 });
 
+test('a confirmação em 320px mantém a CTA final do Instagram visível e utilizável', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.route('**/api/inquiries', async (route) => {
+    await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  });
+  await page.goto('/solicitar-orcamento/camisa-bordada');
+  await fillRequiredFields(page);
+  await page.getByRole('button', { name: 'Enviar solicitação' }).click();
+
+  const instagramCta = page.getByRole('link', { name: 'Abrir Instagram' });
+  await instagramCta.scrollIntoViewIfNeeded();
+  await expect(instagramCta).toBeVisible();
+  await expect(instagramCta).toHaveCSS('min-height', '44px');
+  await expect(instagramCta).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+});
+
 test('sucesso revela o código, permite cópia e entrega ao Instagram oficial', async ({ page }) => {
   await page.route('**/api/inquiries', async (route) => {
     await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
@@ -63,4 +79,12 @@ test('uma rota de solicitação inexistente retorna 404', async ({ page }) => {
   const response = await page.goto('/solicitar-orcamento/nao-existe');
 
   expect(response?.status()).toBe(404);
+});
+
+test('produto indisponível não exibe formulário e oferece atendimento pelo Direct', async ({ page }) => {
+  await page.goto('/solicitar-orcamento/peca-indisponivel-e2e');
+
+  await expect(page.getByRole('status')).toHaveText('Esta peça não está disponível para solicitação no momento.');
+  await expect(page.getByRole('link', { name: 'Conversar pelo Direct' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  await expect(page.getByRole('button', { name: 'Enviar solicitação' })).toHaveCount(0);
 });

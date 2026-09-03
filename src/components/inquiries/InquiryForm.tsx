@@ -9,16 +9,15 @@ import { ReferenceUpload } from './ReferenceUpload';
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 type InquiryFormProps = { product: CatalogProduct; fetcher?: Fetcher };
-type FormValues = { name: string; contact: string; city: string; state: string; occasion: string; description: string; answers: Record<string, string>; privacyAccepted: boolean };
-
-function initialValues(product: CatalogProduct): FormValues {
-  return { name: '', contact: '', city: '', state: '', occasion: '', description: '', privacyAccepted: false, answers: Object.fromEntries(product.customizationFields.map((field) => [field.key, ''])) };
-}
 
 function inputErrorId(name: string): string { return `erro-${name.replace('.', '-')}`; }
 
+function formText(data: FormData, key: string): string {
+  const value = data.get(key);
+  return typeof value === 'string' ? value : '';
+}
+
 export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
-  const [values, setValues] = useState(() => initialValues(product));
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submissionError, setSubmissionError] = useState('');
@@ -29,18 +28,23 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
 
   useEffect(() => { if (Object.keys(errors).length > 0 || submissionError) summaryRef.current?.focus(); }, [errors, submissionError]);
 
-  function update<K extends Exclude<keyof FormValues, 'answers'>>(key: K, value: FormValues[K]) {
-    setValues((current) => ({ ...current, [key]: value }));
-  }
-
-  function fieldProps(name: keyof Omit<FormValues, 'answers' | 'privacyAccepted'>) {
+  function fieldProps(name: 'name' | 'contact' | 'city' | 'state' | 'occasion' | 'description') {
     const error = errors[name];
     return { 'aria-invalid': Boolean(error), 'aria-describedby': error ? inputErrorId(name) : undefined };
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!values.privacyAccepted) {
+    const formData = new FormData(event.currentTarget);
+    const submittedValues = {
+      name: formText(formData, 'name'), contact: formText(formData, 'contact'), city: formText(formData, 'city'), state: formText(formData, 'state'),
+      occasion: formText(formData, 'occasion'), description: formText(formData, 'description'), privacyAccepted: formData.has('privacyAccepted'),
+      answers: Object.fromEntries(fields.map((field) => [field.key, formText(formData, `answers.${field.key}`)])),
+    };
+    const formFiles = formData.getAll('attachments').filter((item): item is File => item instanceof File && item.size > 0);
+    const submittedFiles = formFiles.length > 0 ? formFiles : files;
+    setFiles(submittedFiles);
+    if (!submittedValues.privacyAccepted) {
       setErrors({ privacyAccepted: 'É necessário aceitar a política de privacidade para enviar a solicitação.' });
       return;
     }
@@ -49,16 +53,16 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
     setIsSubmitting(true);
     const data = new FormData();
     data.set('productSlug', product.slug);
-    data.set('name', values.name);
-    data.set('contact', values.contact);
-    data.set('city', values.city);
-    data.set('state', values.state);
-    data.set('occasion', values.occasion);
-    data.set('description', values.description);
-    data.set('answers', JSON.stringify(values.answers));
+    data.set('name', submittedValues.name);
+    data.set('contact', submittedValues.contact);
+    data.set('city', submittedValues.city);
+    data.set('state', submittedValues.state);
+    data.set('occasion', submittedValues.occasion);
+    data.set('description', submittedValues.description);
+    data.set('answers', JSON.stringify(submittedValues.answers));
     data.set('privacyAccepted', 'true');
     data.set('website', '');
-    files.forEach((file) => data.append('attachments', file));
+    submittedFiles.forEach((file) => data.append('attachments', file));
     try {
       const response = await fetcher('/api/inquiries', { method: 'POST', body: data });
       const payload = await response.json() as InquiryResult | { error?: { message?: string; fields?: Record<string, string> } };
@@ -68,7 +72,6 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
         setSubmissionError(apiError?.message ?? 'Não foi possível enviar a solicitação. Tente novamente em instantes.');
         return;
       }
-      setValues(initialValues(product));
       setFiles([]);
       setResult(payload as InquiryResult);
     } catch {
@@ -85,16 +88,16 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
     <input className="sr-only" type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
     {summaryMessages.length > 0 ? <div className="inquiry-form__errors" ref={summaryRef} role="alert" tabIndex={-1}><strong>Confira sua solicitação</strong><ul>{summaryMessages.map((message) => <li key={message}>{message}</li>)}</ul></div> : null}
     <div className="inquiry-form__grid">
-      <div className="inquiry-field"><label htmlFor="name">Seu nome *</label><input id="name" name="name" type="text" value={values.name} onChange={(event) => update('name', event.target.value)} {...fieldProps('name')} />{errors.name ? <p id={inputErrorId('name')} className="inquiry-field__error">{errors.name}</p> : null}</div>
-      <div className="inquiry-field"><label htmlFor="contact">Contato *</label><input id="contact" name="contact" type="text" autoComplete="email" value={values.contact} onChange={(event) => update('contact', event.target.value)} {...fieldProps('contact')} />{errors.contact ? <p id={inputErrorId('contact')} className="inquiry-field__error">{errors.contact}</p> : null}</div>
-      <div className="inquiry-field"><label htmlFor="city">Cidade *</label><input id="city" name="city" type="text" value={values.city} onChange={(event) => update('city', event.target.value)} {...fieldProps('city')} />{errors.city ? <p id={inputErrorId('city')} className="inquiry-field__error">{errors.city}</p> : null}</div>
-      <div className="inquiry-field"><label htmlFor="state">Estado (UF) *</label><input id="state" name="state" type="text" inputMode="text" maxLength={2} value={values.state} onChange={(event) => update('state', event.target.value.toUpperCase())} {...fieldProps('state')} />{errors.state ? <p id={inputErrorId('state')} className="inquiry-field__error">{errors.state}</p> : null}</div>
+      <div className="inquiry-field"><label htmlFor="name">Seu nome *</label><input id="name" name="name" type="text" {...fieldProps('name')} />{errors.name ? <p id={inputErrorId('name')} className="inquiry-field__error">{errors.name}</p> : null}</div>
+      <div className="inquiry-field"><label htmlFor="contact">Contato *</label><input id="contact" name="contact" type="text" autoComplete="email" {...fieldProps('contact')} />{errors.contact ? <p id={inputErrorId('contact')} className="inquiry-field__error">{errors.contact}</p> : null}</div>
+      <div className="inquiry-field"><label htmlFor="city">Cidade *</label><input id="city" name="city" type="text" {...fieldProps('city')} />{errors.city ? <p id={inputErrorId('city')} className="inquiry-field__error">{errors.city}</p> : null}</div>
+      <div className="inquiry-field"><label htmlFor="state">Estado (UF) *</label><input id="state" name="state" type="text" inputMode="text" maxLength={2} {...fieldProps('state')} />{errors.state ? <p id={inputErrorId('state')} className="inquiry-field__error">{errors.state}</p> : null}</div>
     </div>
-    {fields.length > 0 ? <fieldset className="inquiry-form__customization"><legend>Personalize sua peça</legend>{fields.map((field) => <CustomizationInput key={field.key} field={field} value={values.answers[field.key] ?? ''} error={errors[`answers.${field.key}`]} onChange={(answer) => setValues((current) => ({ ...current, answers: { ...current.answers, [field.key]: answer } }))} />)}</fieldset> : null}
-    <div className="inquiry-field"><label htmlFor="occasion">Ocasião ou momento especial <span className="reference-upload__optional">(opcional)</span></label><input id="occasion" name="occasion" type="text" value={values.occasion} onChange={(event) => update('occasion', event.target.value)} {...fieldProps('occasion')} />{errors.occasion ? <p id={inputErrorId('occasion')} className="inquiry-field__error">{errors.occasion}</p> : null}</div>
-    <div className="inquiry-field"><label htmlFor="description">Conte um pouco mais sobre sua ideia <span className="reference-upload__optional">(opcional)</span></label><textarea id="description" name="description" rows={5} value={values.description} onChange={(event) => update('description', event.target.value)} {...fieldProps('description')} />{errors.description ? <p id={inputErrorId('description')} className="inquiry-field__error">{errors.description}</p> : null}</div>
+    {fields.length > 0 ? <fieldset className="inquiry-form__customization"><legend>Personalize sua peça</legend>{fields.map((field) => <CustomizationInput key={field.key} field={field} error={errors[`answers.${field.key}`]} />)}</fieldset> : null}
+    <div className="inquiry-field"><label htmlFor="occasion">Ocasião ou momento especial <span className="reference-upload__optional">(opcional)</span></label><input id="occasion" name="occasion" type="text" {...fieldProps('occasion')} />{errors.occasion ? <p id={inputErrorId('occasion')} className="inquiry-field__error">{errors.occasion}</p> : null}</div>
+    <div className="inquiry-field"><label htmlFor="description">Conte um pouco mais sobre sua ideia <span className="reference-upload__optional">(opcional)</span></label><textarea id="description" name="description" rows={5} {...fieldProps('description')} />{errors.description ? <p id={inputErrorId('description')} className="inquiry-field__error">{errors.description}</p> : null}</div>
     <ReferenceUpload files={files} isUploading={isSubmitting} error={errors.attachments} onAdd={(selected) => setFiles((current) => [...current, ...selected].slice(0, 3))} onRemove={(index) => setFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))} />
-    <div className="inquiry-form__privacy"><label><input type="checkbox" checked={values.privacyAccepted} onChange={(event) => update('privacyAccepted', event.target.checked)} aria-invalid={Boolean(errors.privacyAccepted)} aria-describedby={errors.privacyAccepted ? inputErrorId('privacyAccepted') : undefined} /> Li e aceito a política de privacidade para que a Damazio Atelier responda a esta solicitação.</label>{errors.privacyAccepted ? <p id={inputErrorId('privacyAccepted')} className="inquiry-field__error">{errors.privacyAccepted}</p> : null}</div>
+    <div className="inquiry-form__privacy"><label><input type="checkbox" name="privacyAccepted" aria-invalid={Boolean(errors.privacyAccepted)} aria-describedby={errors.privacyAccepted ? inputErrorId('privacyAccepted') : undefined} /> Li e aceito a política de privacidade para que a Damazio Atelier responda a esta solicitação.</label>{errors.privacyAccepted ? <p id={inputErrorId('privacyAccepted')} className="inquiry-field__error">{errors.privacyAccepted}</p> : null}</div>
     <button type="submit" className="button button--primary inquiry-form__submit" disabled={isSubmitting}>{isSubmitting ? 'Enviando solicitação…' : 'Enviar solicitação'}</button>
   </form>;
 }

@@ -15,7 +15,7 @@ export function ReferenceUpload({ files, isUploading = false, error, onAdd, onRe
     <legend>Referências visuais <span className="reference-upload__optional">(opcional)</span></legend>
     <p>Envie até 3 imagens em JPEG, PNG ou WebP, com até 5 MB cada. Elas são usadas apenas para entender sua ideia.</p>
     <label className="button button--secondary" htmlFor={inputId}>Adicionar referências</label>
-    <input id={inputId} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => {
+    <input id={inputId} className="sr-only" name="attachments" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => {
       onAdd(Array.from(event.target.files ?? []));
       event.currentTarget.value = '';
     }} />

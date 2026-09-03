@@ -16,6 +16,15 @@ const fallbackProducts: CatalogProduct[] = [
   { id: 'bolsa', lineSlug: 'bolsas-de-croche', slug: 'bolsa-de-croche', name: 'Bolsa de crochê', description: 'Trama e acabamento para transformar o cotidiano.', materials: [], availability: 'limited', media: [{ url: '/images/catalogo/bolsa-croche.jpeg', altText: 'Bolsa bege de crochê artesanal da Damazio Atelier', caption: null, sortOrder: 1, isFeatured: true }], customizationFields: [] },
 ];
 
+const e2eUnavailableProduct: CatalogProduct = {
+  id: 'e2e-unavailable', lineSlug: 'bordados-em-roupas', slug: 'peca-indisponivel-e2e', name: 'Peça indisponível para teste',
+  description: null, materials: [], availability: 'unavailable', media: [], customizationFields: [],
+};
+
+function editorialProducts(): CatalogProduct[] {
+  return process.env.E2E_TEST_UNAVAILABLE_PRODUCT === 'true' ? [...fallbackProducts, e2eUnavailableProduct] : fallbackProducts;
+}
+
 function usesEditorialFallback(): boolean {
   try {
     getPublicSupabaseEnv();
@@ -32,7 +41,7 @@ export async function getHomeContent(): Promise<HomeContent> {
 
 export async function getCatalogContent(): Promise<Pick<HomeContent, 'lines' | 'products'>> {
   if (usesEditorialFallback()) {
-    return { lines: fallbackLines, products: fallbackProducts };
+    return { lines: fallbackLines, products: editorialProducts().filter((product) => product.availability !== 'unavailable') };
   }
 
   const [lines, products] = await Promise.all([listPublishedLines(), listPublishedProducts()]);
@@ -41,7 +50,7 @@ export async function getCatalogContent(): Promise<Pick<HomeContent, 'lines' | '
 
 export async function getCatalogProductBySlug(slug: string): Promise<CatalogProduct | null> {
   if (usesEditorialFallback()) {
-    return fallbackProducts.find((product) => product.slug === slug) ?? null;
+    return editorialProducts().find((product) => product.slug === slug) ?? null;
   }
 
   return getPublishedProductBySlug(slug);

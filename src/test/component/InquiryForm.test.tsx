@@ -69,6 +69,19 @@ describe('InquiryForm', () => {
     expect(screen.getByRole('textbox', { name: /seu nome/i })).toHaveValue('Ana');
   });
 
+  it('preserva o valor digitado antes da hidratação quando a API devolve erro', async () => {
+    const fetcher = vi.fn().mockResolvedValue(response(400, { error: { message: 'Confira os campos informados.', fields: { name: 'Informe seu nome.' } } }));
+    render(<InquiryForm product={product} fetcher={fetcher} />);
+    const name = screen.getByRole('textbox', { name: /seu nome/i }) as HTMLInputElement;
+    name.value = 'Ana';
+    fireEvent.click(screen.getByRole('checkbox', { name: /política de privacidade/i }));
+
+    fireEvent.submit(screen.getByRole('button', { name: 'Enviar solicitação' }).closest('form')!);
+
+    await screen.findAllByText('Informe seu nome.');
+    expect(screen.getByRole('textbox', { name: /seu nome/i })).toHaveValue('Ana');
+  });
+
   it('envia multipart com privacidade aceita e mostra a confirmação apenas após sucesso', async () => {
     const fetcher = vi.fn().mockResolvedValue(response(201, { requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }));
     render(<InquiryForm product={product} fetcher={fetcher} />);

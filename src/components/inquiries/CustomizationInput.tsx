@@ -2,18 +2,16 @@ import type { CustomizationField } from '@/features/catalog/types';
 
 type CustomizationInputProps = {
   field: CustomizationField;
-  value: string;
   error?: string;
-  onChange: (value: string) => void;
 };
 
-export function CustomizationInput({ field, value, error, onChange }: CustomizationInputProps) {
+export function CustomizationInput({ field, error }: CustomizationInputProps) {
   const id = `answer-${field.key}`;
   const errorId = `erro-answers-${field.key}`;
   const helpId = field.helpText ? `${id}-ajuda` : undefined;
   const describedBy = [helpId, error ? errorId : undefined].filter(Boolean).join(' ') || undefined;
   const label = <label htmlFor={id}>{field.label}{field.required ? <span aria-hidden="true"> *</span> : null}</label>;
-  const common = { id, name: `answers.${field.key}`, value, required: field.required, 'aria-invalid': Boolean(error), 'aria-describedby': describedBy, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(event.target.value) };
+  const common = { id, name: `answers.${field.key}`, defaultValue: '', required: field.required, 'aria-invalid': Boolean(error), 'aria-describedby': describedBy };
 
   return <div className="inquiry-field">
     {label}

@@ -36,3 +36,19 @@ pnpm vitest run
 pnpm build
 pnpm playwright test src/test/e2e/home.spec.ts
 ```
+
+## Operação e lançamento
+
+Os guias operacionais estão em [docs/operations](docs/operations): publicação do catálogo, atendimento pelo Instagram e checklist de lançamento. O catálogo é consultivo: não há preço público, pagamento, carrinho, checkout, conta de cliente ou prazo fixo.
+
+Para validar o conteúdo aprovado sem alterar dados remotos, informe um arquivo JSON local em `CATALOG_SEED_FILE` e execute:
+
+```bash
+pnpm seed:catalog
+```
+
+O comando faz dry-run por padrão. A escrita é bloqueada em produção e só pode ocorrer em um staging vazio após seis confirmações explícitas, incluindo a allowlist `CATALOG_SEED_STAGING_URL`, descritas em `docs/operations/catalog-content-guide.md`. A chave de serviço é usada apenas pelo processo de linha de comando, nunca pelo navegador.
+
+O smoke remoto também é opt-in: defina uma URL HTTPS de staging e as confirmações `LAUNCH_SMOKE_TARGET=staging`, `LAUNCH_SMOKE_CONFIRM_URL` e `LAUNCH_SMOKE_ALLOW_REMOTE_STAGING=true` antes de executar `pnpm playwright test src/test/e2e/launch-smoke.spec.ts`. A criação de solicitação de ensaio continua bloqueada até `LAUNCH_SMOKE_ALLOW_WRITE=true` e autorização explícita.
+
+As imagens atuais têm marca-d'água e são provisórias. A substituição por imagens web aprovadas sem marca-d'água, a URL HTTPS final, as origens confiáveis reais e a revisão jurídica dos dados do responsável são bloqueadores de lançamento.

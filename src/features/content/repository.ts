@@ -1,4 +1,4 @@
-import { listPublishedLines, listPublishedProducts } from '@/features/catalog/repository';
+import { getPublishedProductBySlug, listPublishedLines, listPublishedProducts } from '@/features/catalog/repository';
 import type { CatalogLine, CatalogProduct } from '@/features/catalog/types';
 import type { HomeContent } from './types';
 
@@ -31,9 +31,26 @@ function mergeEditorialLines(publishedLines: CatalogLine[]): CatalogLine[] {
 }
 
 export async function getHomeContent(): Promise<HomeContent> {
+  const catalog = await getCatalogContent();
+  return { hero: { eyebrow: 'Damazio Atelier', title: 'Peças que contam histórias', description: 'Bordados, crochê e presentes autorais feitos sob encomenda para transformar afeto em memória.' }, lines: catalog.lines, products: catalog.products.slice(0, 3) };
+}
+
+export async function getCatalogContent(): Promise<Pick<HomeContent, 'lines' | 'products'>> {
   const [publishedLines, products] = await Promise.all([
     publishedOrFallback(listPublishedLines, fallbackLines),
     publishedOrFallback(listPublishedProducts, fallbackProducts),
   ]);
-  return { hero: { eyebrow: 'Damazio Atelier', title: 'Peças que contam histórias', description: 'Bordados, crochê e presentes autorais feitos sob encomenda para transformar afeto em memória.' }, lines: mergeEditorialLines(publishedLines), products: products.slice(0, 3) };
+  return { lines: mergeEditorialLines(publishedLines), products };
+}
+
+export async function getCatalogProductBySlug(slug: string): Promise<CatalogProduct | null> {
+  try {
+    const publishedProduct = await getPublishedProductBySlug(slug);
+    if (publishedProduct) return publishedProduct;
+  } catch {
+    // O catálogo editorial mantém referências locais quando o serviço público não está configurado.
+  }
+
+  const { products } = await getCatalogContent();
+  return products.find((product) => product.slug === slug) ?? null;
 }

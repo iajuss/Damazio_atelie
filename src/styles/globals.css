@@ -62,6 +62,31 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--color-clay); ou
 .delivery-story .button, .catalog-cta .button { margin-top: 1.5rem; }
 .catalog-cta { padding: 4rem 0; background: var(--color-ink); color: var(--color-paper); }
 .catalog-cta .eyebrow { color: #dfc98d; }
+.catalog-hero { padding: clamp(4rem, 10vw, 7rem) 0; background: var(--color-sand); }
+.catalog-hero h1, .product-details h1 { max-width: 16ch; margin: .5rem 0 1rem; font-family: var(--font-display); font-size: clamp(2.6rem, 7vw, 4.75rem); line-height: 1; }
+.catalog-hero p:not(.eyebrow) { max-width: 42rem; margin: 0; font-size: 1.125rem; }
+.catalog-empty { max-width: 42rem; }
+.product-page { display: grid; gap: 2rem; padding-block: 2.5rem 4rem; }
+.product-gallery { min-width: 0; outline-offset: 4px; }
+.product-gallery__image-wrap, .product-gallery__placeholder { position: relative; min-height: min(120vw, 35rem); overflow: hidden; background: linear-gradient(135deg, #e7d4bd, #b59c76); }
+.product-gallery__image { object-fit: cover; }
+.product-gallery__caption { margin: .75rem 0 0; color: var(--color-clay-dark); font-size: .9rem; }
+.product-gallery__controls { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: .75rem; }
+.product-gallery__controls button { min-height: 44px; padding: .55rem .75rem; border: 1px solid var(--color-clay); border-radius: 999px; background: transparent; color: var(--color-clay-dark); font: inherit; font-weight: 700; }
+.product-gallery__controls p { margin: 0; text-align: center; font-size: .9rem; }
+.product-details { min-width: 0; }
+.product-details .eyebrow a { color: inherit; }
+.product-details__description { max-width: 42rem; font-size: 1.125rem; }
+.product-details section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--color-line); }
+.product-details h2 { margin: 0 0 .75rem; font-family: var(--font-display); font-size: 1.5rem; }
+.product-details ul { display: grid; gap: .6rem; margin: 0; padding-left: 1.25rem; }
+.product-details li p { margin: .25rem 0 0; }
+.availability-badge { display: inline-flex; margin-top: .5rem; padding: .35rem .6rem; border: 1px solid var(--color-line); color: var(--color-clay-dark); font-size: .8rem; font-weight: 700; }
+.availability-badge--limited { border-color: var(--color-dourado-antigo); color: #725a1d; }
+.availability-badge--unavailable { border-color: var(--color-ink); color: var(--color-ink); }
+.product-details__request, .product-details__unavailable { display: grid; gap: .75rem; background: #f3eadc; padding: 1.5rem; }
+.product-details__request h2, .product-details__unavailable p { margin: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .institutional-hero { min-height: 60vh; padding: clamp(4rem, 10vw, 8rem) 0; background: var(--color-sand); }
 .institutional-hero h1 { max-width: 16ch; margin: .5rem 0 1rem; font-family: var(--font-display); font-size: clamp(2.75rem, 8vw, 5rem); line-height: 1; }
 .institutional-hero p { max-width: 45rem; margin-top: 1rem; font-size: 1.1rem; }
@@ -75,5 +100,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--color-clay); ou
 .site-footer nav { display: flex; flex-wrap: wrap; gap: .25rem; }
 @media (min-width: 42rem) { .line-grid, .product-grid, .process-steps__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 48rem) { .menu-toggle { display: none; } .site-nav { display: flex; align-items: center; } .site-nav--open { position: static; padding: 0; border: 0; background: transparent; box-shadow: none; flex-direction: row; } .detail-story__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 64rem) { .product-page { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; padding-block: 4rem 5rem; } .product-gallery { position: sticky; top: 1.5rem; } .product-gallery__image-wrap, .product-gallery__placeholder { min-height: 34rem; } }
 @media (min-width: 64rem) { .line-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .product-grid, .process-steps__list { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }

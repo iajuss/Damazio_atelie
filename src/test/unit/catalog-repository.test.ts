@@ -203,9 +203,28 @@ describe('catálogo público', () => {
     });
   });
 
+  it('retorna o produto publicado indisponível pela consulta direta de slug', async () => {
+    const repository = repositoryWithCatalog({
+      productRows: [productRow({ slug: 'pausado', availability: 'unavailable' })],
+    });
+
+    await expect(repository.getPublishedProductBySlug('pausado')).resolves.toMatchObject({
+      slug: 'pausado',
+      availability: 'unavailable',
+    });
+  });
+
   it('retorna null quando o slug de produto não existe', async () => {
     const repository = repositoryWithCatalog({ productRows: [productRow()] });
 
     await expect(repository.getPublishedProductBySlug('inexistente')).resolves.toBeNull();
+  });
+
+  it('não retorna um produto não publicado pela consulta direta de slug', async () => {
+    const repository = repositoryWithCatalog({
+      productRows: [productRow({ slug: 'rascunho', published: false })],
+    });
+
+    await expect(repository.getPublishedProductBySlug('rascunho')).resolves.toBeNull();
   });
 });

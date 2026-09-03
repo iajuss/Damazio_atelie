@@ -52,12 +52,12 @@ describe('LineCard', () => {
 });
 
 describe('ProductCard', () => {
-  it('orienta a solicitação sem exibir preço', () => {
+  it('leva aos detalhes consultivos sem exibir preço', () => {
     render(<ProductCard product={product} />);
 
     expect(screen.getByText('Sob encomenda')).toBeInTheDocument();
     expect(screen.getByText('Personalizável')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Solicitar orçamento' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Ver detalhes de Camisa bordada' })).toHaveAttribute(
       'href',
       '/produtos/camisa-bordada',
     );

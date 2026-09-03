@@ -79,12 +79,12 @@ function throwQueryError(error: { message: string } | null): void {
   }
 }
 
-function isPublishedProduct(row: ProductRow): boolean {
-  return row.published && row.product_line?.published === true && row.availability !== 'unavailable';
+function isPublishedProduct(row: ProductRow, includeUnavailable = false): boolean {
+  return row.published && row.product_line?.published === true && (includeUnavailable || row.availability !== 'unavailable');
 }
 
-function mapProduct(row: ProductRow): CatalogProduct | null {
-  if (!isPublishedProduct(row)) {
+function mapProduct(row: ProductRow, includeUnavailable = false): CatalogProduct | null {
+  if (!isPublishedProduct(row, includeUnavailable)) {
     return null;
   }
 
@@ -172,7 +172,7 @@ export function createCatalogRepository(source: CatalogDataSource = createDefaul
       throwQueryError(error);
 
       return (data ?? [])
-        .map(mapProduct)
+        .map((row) => mapProduct(row))
         .filter((product): product is CatalogProduct => product !== null);
     },
 
@@ -196,12 +196,11 @@ export function createCatalogRepository(source: CatalogDataSource = createDefaul
         .eq('slug', slug)
         .eq('published', true)
         .eq('product_line.published', true)
-        .neq('availability', 'unavailable')
         .limit(1)
         .maybeSingle();
       throwQueryError(error);
 
-      return data ? mapProduct(data as ProductRow) : null;
+      return data ? mapProduct(data as ProductRow, true) : null;
     },
   };
 }

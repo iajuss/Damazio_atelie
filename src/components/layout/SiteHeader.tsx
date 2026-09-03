@@ -6,9 +6,9 @@ import { SITE_NAME } from '@/lib/site';
 import { Container } from '@/components/ui/Container';
 
 const navigation = [
-  { href: '#catalogo', label: 'Catálogo' },
-  { href: '#sobre', label: 'Sobre' },
-  { href: '#como-funciona', label: 'Como funciona' },
+  { href: '/catalogo', label: 'Catálogo' },
+  { href: '/sobre', label: 'Sobre' },
+  { href: '/como-funciona', label: 'Como funciona' },
 ];
 
 export function SiteHeader() {

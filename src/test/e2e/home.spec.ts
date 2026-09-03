@@ -5,7 +5,7 @@ test('a página inicial móvel oferece CTA consultivo e links institucionais com
 
   await expect(page.getByRole('button', { name: 'Abrir menu de navegação' })).toBeVisible();
   await expect(page.getByRole('main')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Solicitar orçamento' })).toHaveAttribute('href', '/catalogo');
+  await expect(page.locator('.hero').getByRole('link', { name: 'Solicitar orçamento' })).toHaveAttribute('href', '/catalogo');
   await expect(page.getByRole('link', { name: 'Entrega' })).toHaveAttribute('href', '/envio-nacional');
   await expect(page.getByRole('link', { name: 'Perguntas frequentes' })).toHaveAttribute('href', '/perguntas-frequentes');
   await expect(page.getByRole('link', { name: 'Privacidade' })).toHaveAttribute('href', '/privacidade');
@@ -28,5 +28,5 @@ test('o menu móvel alterna o nome acessível e mantém alvos de toque utilizáv
 test('a etiqueta visual usa o dourado antigo do atelier', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('.eyebrow')).toHaveCSS('color', 'rgb(154, 123, 52)');
+  await expect(page.locator('.hero .eyebrow')).toHaveCSS('color', 'rgb(154, 123, 52)');
 });

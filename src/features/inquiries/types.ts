@@ -1,6 +1,9 @@
 import type { CatalogProduct } from '@/features/catalog/types';
 
+export type InquiryKind = 'product' | 'custom';
+
 export type InquiryInput = {
+  requestKind?: InquiryKind;
   productSlug: string;
   name: string;
   contact: string;
@@ -13,7 +16,9 @@ export type InquiryInput = {
   attachments: File[];
 };
 
-export type ValidInquiryInput = Omit<InquiryInput, 'occasion' | 'description'> & {
+export type ValidInquiryInput = Omit<InquiryInput, 'occasion' | 'description' | 'productSlug' | 'requestKind'> & {
+  requestKind: InquiryKind;
+  productSlug: string | null;
   occasion: string | null;
   description: string | null;
 };

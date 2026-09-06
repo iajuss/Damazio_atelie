@@ -25,7 +25,7 @@ export type InquiryServiceDependencies = {
 export async function createInquiry(input: InquiryInput, product: CatalogProduct | null, dependencies: InquiryServiceDependencies = {}): Promise<InquiryResult> {
   const validation = validateInquiryInput(input, product);
   if (!validation.success) throw new InquirySubmissionError('validation', validation.errors);
-  if (!product) throw new InquirySubmissionError('validation');
+  if (validation.data.requestKind === 'product' && !product) throw new InquirySubmissionError('validation');
 
   const attachments = await inspectAttachments(validation.data.attachments);
   const requestCode = (dependencies.createRequestCode ?? createRequestCode)();
@@ -44,7 +44,7 @@ export async function createInquiry(input: InquiryInput, product: CatalogProduct
     }
 
     const persisted = await client.rpc('create_inquiry_with_answers', {
-      p_request_code: requestCode, p_product_id: product.id, p_name: validation.data.name, p_contact: validation.data.contact,
+      p_request_code: requestCode, p_product_id: product?.id ?? null, p_request_kind: validation.data.requestKind, p_name: validation.data.name, p_contact: validation.data.contact,
       p_city: validation.data.city, p_state: validation.data.state, p_occasion: validation.data.occasion,
       p_description: validation.data.description, p_privacy_accepted_at: new Date().toISOString(), p_answers: validation.data.answers,
       p_attachments: attachmentRows,

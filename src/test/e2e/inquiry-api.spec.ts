@@ -43,7 +43,7 @@ test('confirma a solicitação mesmo quando a notificação imediata falha', asy
 
 test('aceita criação livre e gera protocolo sem carregar uma inspiração', async () => {
   let productWasLoaded = false;
-  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true, loadProduct: async () => { productWasLoaded = true; return product; }, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true, loadProduct: async () => { productWasLoaded = true; return product; }, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }), deliverNotifications: async () => {} });
   const response = await post(request(form({ requestKind: 'custom', productSlug: '', description: 'Quero uma peça para presentear minha mãe.', answers: '{}' })));
   expect(response.status).toBe(201);
   expect(productWasLoaded).toBe(false);
@@ -87,7 +87,7 @@ test('limita answers antes de analisar JSON e não reflete chave arbitrária no 
 
 test('normaliza o slug antes de consultar o produto', async () => {
   let requestedSlug = '';
-  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true, loadProduct: async (slug) => { requestedSlug = slug; return product; }, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true, loadProduct: async (slug) => { requestedSlug = slug; return product; }, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }), deliverNotifications: async () => {} });
   const response = await post(request(form({ productSlug: '  TOALHA-BORDADA  ' })));
   expect(response.status).toBe(201);
   expect(requestedSlug).toBe('toalha-bordada');

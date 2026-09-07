@@ -1,7 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
 
-import { deliverLeadNotifications } from '@/features/inquiries/lead-notifications';
-
 export const runtime = 'nodejs';
 
 type Delivery = (options: { limit?: number }) => Promise<void>;
@@ -31,7 +29,8 @@ export function createLeadNotificationsGetHandler(dependencies: LeadNotification
     }
 
     try {
-      await (dependencies.deliverNotifications ?? deliverLeadNotifications)({ limit: 10 });
+      const deliverNotifications = dependencies.deliverNotifications ?? (await import('@/features/inquiries/lead-notifications')).deliverLeadNotifications;
+      await deliverNotifications({ limit: 10 });
       return Response.json({ processed: true }, { headers: privateResponseHeaders });
     } catch {
       return Response.json({ error: 'Não foi possível processar as notificações.' }, { status: 500, headers: privateResponseHeaders });

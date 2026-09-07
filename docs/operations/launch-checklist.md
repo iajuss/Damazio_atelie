@@ -9,6 +9,8 @@ Use esta lista como evidência de lançamento. Nenhuma etapa externa deve ser ex
 - [ ] Definir origens confiáveis reais em `INQUIRY_ALLOWED_ORIGINS`; remover `localhost` da configuração de produção.
 - [ ] Confirmar revisão jurídica da política, termos e dados reais do responsável pelo tratamento (nome/razão social, CNPJ quando aplicável, endereço e canal de titulares).
 - [ ] Confirmar o perfil oficial do Instagram: `https://www.instagram.com/damazio.atelier/`.
+- [ ] Ativar a verificação em duas etapas na conta Google e criar uma senha de app exclusiva para o Gmail SMTP. Não usar a senha normal da conta.
+- [ ] Definir `GMAIL_SMTP_USER`, `GMAIL_SMTP_APP_PASSWORD`, `GMAIL_SMTP_FROM`, `LEAD_NOTIFICATION_TO=damazioatelier@gmail.com` e `CRON_SECRET` apenas na Vercel Production. Nunca versionar esses valores nem configurá-los em Preview.
 
 ## Conteúdo e catálogo
 
@@ -22,7 +24,9 @@ Use esta lista como evidência de lançamento. Nenhuma etapa externa deve ser ex
 
 - [ ] Vercel: apontar o domínio somente após autorização; confirmar certificado HTTPS válido, URL canônica, variáveis de ambiente e resposta da rota inicial. Registrar URL e data.
 - [ ] Vercel: configurar variáveis apenas no ambiente correto; verificar que `SUPABASE_SERVICE_ROLE_KEY` não aparece no bundle, no navegador ou em logs públicos.
-- [ ] Supabase: aplicar migrações no projeto autorizado e confirmar que `inquiry-references` é privado.
+- [ ] Vercel: conectar o repositório Git, validar primeiro um Preview sem credenciais Gmail e promover somente o commit aprovado para Production.
+- [ ] Vercel: confirmar que o cron `/api/internal/lead-notifications` executa diariamente às 08:00 UTC. Em plano Pro, avaliar substituir a agenda por `*/5 * * * *` para recuperação a cada cinco minutos.
+- [ ] Supabase: aplicar migrações no projeto autorizado, incluindo `0005_inquiry_email_notifications.sql`, e confirmar que `inquiry-references` e a fila de e-mails continuam privados.
 - [ ] Supabase: com uma sessão anônima, tentar listar referências e registrar a negativa; com operador autorizado, confirmar a consulta de uma solicitação de ensaio.
 - [ ] Supabase: revisar acesso individual ao painel, RLS, backups, monitoramento, alertas e política de retenção. Não alterar esses recursos sem autorização.
 - [ ] Configurar os contatos operacionais para acesso a falhas e solicitações, quando a Damazio aprovar o mecanismo de monitoramento.
@@ -34,6 +38,7 @@ Use esta lista como evidência de lançamento. Nenhuma etapa externa deve ser ex
 3. Configurar `LAUNCH_SMOKE_BASE_URL` com a URL HTTPS de staging, `LAUNCH_SMOKE_TARGET=staging`, `LAUNCH_SMOKE_CONFIRM_URL` com a mesma URL e `LAUNCH_SMOKE_ALLOW_REMOTE_STAGING=true`. Definir também `LAUNCH_SMOKE_PRODUCT_SLUG` com um produto publicado, `LAUNCH_SMOKE_SUPABASE_URL` e uma chave anônima válida de staging para testar o bucket privado.
 4. Executar `pnpm playwright test src/test/e2e/launch-smoke.spec.ts`. O ensaio de escrita fica bloqueado até `LAUNCH_SMOKE_ALLOW_WRITE=true`; só habilitá-lo com autorização explícita para criar uma solicitação de ensaio.
 5. Em celular e desktop, seguir produto → “Solicitar orçamento” → envio autorizado → código → “Abrir Instagram”. Confirmar que o destino é o perfil oficial.
+6. Em Production, enviar uma solicitação controlada e confirmar: protocolo na página, registro privado no Supabase, e-mail recebido em `damazioatelier@gmail.com` e ausência de imagens anexadas. Conferir também o log do cron no dia seguinte.
 
 ## Qualidade e limitações
 

@@ -36,10 +36,25 @@ test('a rota de entrega orienta a continuação no Direct oficial', async ({ pag
   await expect(page.getByRole('link', { name: 'Continuar no Direct' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
 });
 
+test('as três páginas informativas do rodapé usam o header marrom', async ({ page }) => {
+  for (const path of ['/envio-nacional', '/perguntas-frequentes', '/privacidade']) {
+    await page.goto(path);
+    await expect(page.getByRole('banner')).toHaveCSS('background-color', 'rgb(47, 42, 39)');
+  }
+});
+
 test('o contato oferece e-mail e Instagram', async ({ page }) => {
   await page.goto('/contato');
   await expect(page.getByRole('link', { name: 'Enviar e-mail para a Damazio' })).toHaveAttribute('href', 'mailto:damazioatelier@gmail.com');
   await expect(page.getByRole('link', { name: 'Abrir Instagram da Damazio' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+});
+
+test('a política explica a notificação operacional pelo Gmail', async ({ page }) => {
+  await page.goto('/privacidade');
+
+  await expect(page.getByText(/podem ser transmitidos ao Gmail somente/i)).toBeVisible();
+  await expect(page.getByText(/pelo endereço damazioatelier@gmail\.com/i)).toBeVisible();
+  await expect(page.getByText(/referências visuais.*não são anexadas/i)).toBeVisible();
 });
 
 test('o CTA do catálogo permanece visível em celular sem overflow horizontal', async ({ page }) => {

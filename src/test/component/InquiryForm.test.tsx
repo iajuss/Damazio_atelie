@@ -16,6 +16,13 @@ function response(status: number, body: unknown): Response {
 }
 
 describe('InquiryForm', () => {
+  it('leva a pessoa à política antes de consentir com o envio', () => {
+    render(<InquiryForm product={product} />);
+
+    expect(screen.getByRole('link', { name: 'política de privacidade' })).toHaveAttribute('href', '/privacidade');
+    expect(screen.getByRole('link', { name: 'Continuar pelo Direct' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  });
+
   it('pede a ideia e envia uma criação livre sem inspiração', async () => {
     const fetcher = vi.fn().mockResolvedValue(response(201, { requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }));
     render(<InquiryForm requestKind="custom" fetcher={fetcher} />);

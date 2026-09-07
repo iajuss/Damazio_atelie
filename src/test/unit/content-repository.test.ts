@@ -67,6 +67,7 @@ describe('getHomeContent', () => {
       'camisa-bordada',
       'toalha-personalizada',
       'bolsa-de-croche',
+      'presente-embalado',
       'sousplat-de-croche',
     ]);
   });

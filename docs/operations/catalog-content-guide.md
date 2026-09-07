@@ -39,8 +39,8 @@ Para uma pergunta de personalização, escolha `texto`, `texto longo` ou `seleç
 | Status | Uso no catálogo | Ação operacional |
 |---|---|---|
 | Disponível | Aceita novas solicitações. | Acompanhar a fila e atualizar quando a capacidade mudar. |
-| Capacidade limitada | Aceita solicitações, com aviso de capacidade. | Avaliar cada caso no Direct antes de confirmar prazo. |
-| Indisponível | Não aceita o formulário. | Informar a condição e manter contato pelo Instagram como alternativa. |
+| Capacidade limitada | Aceita solicitações, com aviso de capacidade. | Avaliar cada caso pelo WhatsApp antes de confirmar prazo. |
+| Indisponível | Não aceita o formulário. | Informar a condição e manter contato pelo WhatsApp como alternativa. |
 
 Não prometer reposição, prazo de retorno ou capacidade futura no texto público.
 

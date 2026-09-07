@@ -4,6 +4,7 @@ test('a página inicial móvel oferece CTA consultivo e links institucionais com
   await page.goto('/');
 
   await expect(page.getByRole('button', { name: 'Abrir menu de navegação' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Falar com a Damazio pelo WhatsApp' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
   await expect(page.getByRole('main')).toBeVisible();
   await expect(page.locator('.hero').getByRole('link', { name: 'Solicitar orçamento' })).toHaveAttribute('href', '/catalogo');
   await expect(page.getByRole('link', { name: 'Entrega' })).toHaveAttribute('href', '/envio-nacional');

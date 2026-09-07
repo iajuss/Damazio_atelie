@@ -1,14 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { InquiryConfirmation } from '@/components/inquiries/InquiryConfirmation';
-import { INSTAGRAM_PROFILE_URL } from '@/lib/site';
+import { WHATSAPP_CONTACT_URL } from '@/lib/site';
 
 describe('InquiryConfirmation', () => {
   it('mantém o código e o próximo passo no HTML, inclusive sem JavaScript', () => {
     render(<InquiryConfirmation result={{ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }} />);
 
     expect(screen.getByText('AB12CD34EF56GH78IJ90')).toBeInTheDocument();
-    expect(screen.getByText(/o orçamento, o prazo e o frete serão confirmados no Direct/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Abrir Instagram' })).toHaveAttribute('href', INSTAGRAM_PROFILE_URL);
+    expect(screen.getByText(/o orçamento, o prazo e o frete serão confirmados pelo WhatsApp/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveAttribute('href', WHATSAPP_CONTACT_URL);
     expect(screen.getByRole('link', { name: 'Enviar e-mail' })).toHaveAttribute('href', expect.stringContaining('mailto:damazioatelier@gmail.com?subject=Solicita%C3%A7%C3%A3o+AB12CD34EF56GH78IJ90'));
   });
 

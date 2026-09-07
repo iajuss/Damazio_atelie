@@ -30,10 +30,10 @@ test('a home apresenta as cinco linhas e FAQ sobre o envio nacional', async ({ p
   await expect(page.getByRole('link', { name: 'Conheça o catálogo' })).toBeVisible();
 });
 
-test('a rota de entrega orienta a continuação no Direct oficial', async ({ page }) => {
+test('a rota de entrega orienta a continuação no WhatsApp oficial', async ({ page }) => {
   await page.goto('/envio-nacional');
 
-  await expect(page.getByRole('link', { name: 'Continuar no Direct' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  await expect(page.getByRole('link', { name: 'Continuar no WhatsApp' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
 });
 
 test('as três páginas informativas do rodapé usam o header marrom', async ({ page }) => {
@@ -43,10 +43,10 @@ test('as três páginas informativas do rodapé usam o header marrom', async ({ 
   }
 });
 
-test('o contato oferece e-mail e Instagram', async ({ page }) => {
+test('o contato oferece e-mail e WhatsApp', async ({ page }) => {
   await page.goto('/contato');
   await expect(page.getByRole('link', { name: 'Enviar e-mail para a Damazio' })).toHaveAttribute('href', 'mailto:damazioatelier@gmail.com');
-  await expect(page.getByRole('link', { name: 'Abrir Instagram da Damazio' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  await expect(page.getByRole('link', { name: 'Abrir WhatsApp da Damazio' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
 });
 
 test('a política explica a notificação operacional pelo Gmail', async ({ page }) => {

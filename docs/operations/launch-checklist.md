@@ -8,7 +8,7 @@ Use esta lista como evidência de lançamento. Nenhuma etapa externa deve ser ex
 - [ ] Definir e testar a URL HTTPS final em `NEXT_PUBLIC_SITE_URL`.
 - [ ] Definir origens confiáveis reais em `INQUIRY_ALLOWED_ORIGINS`; remover `localhost` da configuração de produção.
 - [ ] Confirmar revisão jurídica da política, termos e dados reais do responsável pelo tratamento (nome/razão social, CNPJ quando aplicável, endereço e canal de titulares).
-- [ ] Confirmar o perfil oficial do Instagram: `https://www.instagram.com/damazio.atelier/`.
+- [ ] Confirmar o WhatsApp oficial: `https://wa.me/5511910771179`.
 - [ ] Ativar a verificação em duas etapas na conta Google e criar uma senha de app exclusiva para o Gmail SMTP. Não usar a senha normal da conta.
 - [ ] Definir `GMAIL_SMTP_USER`, `GMAIL_SMTP_APP_PASSWORD`, `GMAIL_SMTP_FROM`, `LEAD_NOTIFICATION_TO=damazioatelier@gmail.com` e `CRON_SECRET` apenas na Vercel Production. Nunca versionar esses valores nem configurá-los em Preview.
 
@@ -37,7 +37,7 @@ Use esta lista como evidência de lançamento. Nenhuma etapa externa deve ser ex
 2. Depois de autorização explícita para staging, preencher as seis confirmações descritas no guia de catálogo, incluindo a allowlist `CATALOG_SEED_STAGING_URL`, e executar o seed em um staging vazio. Conferir linhas, produtos, imagens e campos no painel de staging.
 3. Configurar `LAUNCH_SMOKE_BASE_URL` com a URL HTTPS de staging, `LAUNCH_SMOKE_TARGET=staging`, `LAUNCH_SMOKE_CONFIRM_URL` com a mesma URL e `LAUNCH_SMOKE_ALLOW_REMOTE_STAGING=true`. Definir também `LAUNCH_SMOKE_PRODUCT_SLUG` com um produto publicado, `LAUNCH_SMOKE_SUPABASE_URL` e uma chave anônima válida de staging para testar o bucket privado.
 4. Executar `pnpm playwright test src/test/e2e/launch-smoke.spec.ts`. O ensaio de escrita fica bloqueado até `LAUNCH_SMOKE_ALLOW_WRITE=true`; só habilitá-lo com autorização explícita para criar uma solicitação de ensaio.
-5. Em celular e desktop, seguir produto → “Solicitar orçamento” → envio autorizado → código → “Abrir Instagram”. Confirmar que o destino é o perfil oficial.
+5. Em celular e desktop, seguir produto → “Solicitar orçamento” → envio autorizado → código → “Abrir WhatsApp”. Confirmar que o destino é o canal oficial.
 6. Em Production, enviar uma solicitação controlada e confirmar: protocolo na página, registro privado no Supabase, e-mail recebido em `damazioatelier@gmail.com` e ausência de imagens anexadas. Conferir também o log do cron no dia seguinte.
 
 ## Qualidade e limitações

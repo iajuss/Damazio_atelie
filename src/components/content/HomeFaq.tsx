@@ -5,10 +5,10 @@ import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 
 const questions = [
-  ['Posso personalizar uma peça que vi no catálogo?', 'Sim. Escolha a inspiração mais próxima da sua ideia e conte os detalhes no formulário. A Damazio confirma as possibilidades no Direct.'],
-  ['Como recebo orçamento e prazo?', 'Depois de avaliar a personalização, a Damazio alinha orçamento, prazo e frete diretamente no Instagram.'],
+  ['Posso personalizar uma peça que vi no catálogo?', 'Sim. Escolha a inspiração mais próxima da sua ideia e conte os detalhes no formulário. A Damazio confirma as possibilidades pelo WhatsApp.'],
+  ['Como recebo orçamento e prazo?', 'Depois de avaliar a personalização, a Damazio alinha orçamento, prazo e frete pelo WhatsApp.'],
   ['Vocês enviam para todo o Brasil?', 'Sim. O envio é combinado caso a caso, de acordo com a criação e o destino.'],
-  ['Preciso criar uma conta para solicitar?', 'Não. Basta enviar sua ideia; ao final, você recebe um código para continuar a conversa pelo Direct.'],
+  ['Preciso criar uma conta para solicitar?', 'Não. Basta enviar sua ideia; ao final, você recebe um código para continuar a conversa pelo WhatsApp.'],
 ] as const;
 
 export function HomeFaq() {

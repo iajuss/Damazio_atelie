@@ -30,13 +30,13 @@ test('a política de privacidade se destaca como link no consentimento', async (
   await page.goto('/solicitar-orcamento');
 
   await expect(page.getByRole('link', { name: 'política de privacidade' })).toHaveCSS('color', 'rgb(121, 68, 49)');
-  const direct = page.getByRole('link', { name: 'Continuar pelo Direct' });
-  await expect(direct).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
-  await expect(direct).toHaveAttribute('target', '_blank');
-  await expect(direct).toHaveAttribute('rel', 'noreferrer');
+  const whatsapp = page.getByRole('link', { name: 'Continuar pelo WhatsApp' });
+  await expect(whatsapp).toHaveAttribute('href', 'https://wa.me/5511910771179');
+  await expect(whatsapp).toHaveAttribute('target', '_blank');
+  await expect(whatsapp).toHaveAttribute('rel', 'noreferrer');
 });
 
-test('a confirmação em 320px mantém a CTA final do Instagram visível e utilizável', async ({ page }) => {
+test('a confirmação em 320px mantém a CTA final do WhatsApp visível e utilizável', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.route('**/api/inquiries', async (route) => {
     await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
@@ -45,14 +45,14 @@ test('a confirmação em 320px mantém a CTA final do Instagram visível e utili
   await fillRequiredFields(page);
   await page.getByRole('button', { name: 'Enviar solicitação' }).click();
 
-  const instagramCta = page.getByRole('link', { name: 'Abrir Instagram' });
-  await instagramCta.scrollIntoViewIfNeeded();
-  await expect(instagramCta).toBeVisible();
-  await expect(instagramCta).toHaveCSS('min-height', '44px');
-  await expect(instagramCta).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  const whatsappCta = page.getByRole('link', { name: 'Abrir WhatsApp' });
+  await whatsappCta.scrollIntoViewIfNeeded();
+  await expect(whatsappCta).toBeVisible();
+  await expect(whatsappCta).toHaveCSS('min-height', '44px');
+  await expect(whatsappCta).toHaveAttribute('href', 'https://wa.me/5511910771179');
 });
 
-test('sucesso revela o código, permite cópia e entrega ao Instagram oficial', async ({ page }) => {
+test('sucesso revela o código, permite cópia e entrega ao WhatsApp oficial', async ({ page }) => {
   await page.route('**/api/inquiries', async (route) => {
     await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
   });
@@ -64,7 +64,7 @@ test('sucesso revela o código, permite cópia e entrega ao Instagram oficial', 
   await expect(page.getByText('AB12CD34EF56GH78IJ90')).toBeVisible();
   await page.getByRole('button', { name: 'Copiar código' }).click();
   await expect(page.getByRole('status')).toHaveText('Código copiado.');
-  await expect(page.getByRole('link', { name: 'Abrir Instagram' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  await expect(page.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
 });
 
 test('erro de envio mantém os dados digitados e associa o feedback ao campo', async ({ page }) => {
@@ -99,10 +99,10 @@ test('uma rota de solicitação inexistente retorna 404', async ({ page }) => {
   expect(response?.status()).toBe(404);
 });
 
-test('produto indisponível não exibe formulário e oferece atendimento pelo Direct', async ({ page }) => {
+test('produto indisponível não exibe formulário e oferece atendimento pelo WhatsApp', async ({ page }) => {
   await page.goto('/solicitar-orcamento/peca-indisponivel-e2e');
 
   await expect(page.getByRole('status')).toHaveText('Esta peça não está disponível para solicitação no momento.');
-  await expect(page.getByRole('link', { name: 'Conversar pelo Direct' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  await expect(page.getByRole('link', { name: 'Conversar pelo WhatsApp' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
   await expect(page.getByRole('button', { name: 'Enviar solicitação' })).toHaveCount(0);
 });

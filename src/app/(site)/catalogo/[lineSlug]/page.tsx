@@ -51,7 +51,7 @@ export default async function CatalogLinePage({ params }: LinePageProps) {
             <ul className="catalog-line-hero__marks" aria-label="Características da linha">
               <li>Feito sob encomenda</li>
               <li>Detalhes personalizáveis</li>
-              <li>Atendimento pelo Direct</li>
+              <li>Atendimento pelo WhatsApp</li>
             </ul>
             <Button href="#modelos">Ver modelos</Button>
           </div>
@@ -73,7 +73,7 @@ export default async function CatalogLinePage({ params }: LinePageProps) {
             </div>
           ) : (
             <p className="catalog-empty">
-              Novas inspirações desta linha estarão disponíveis em breve. Enquanto isso, conte sua ideia pelo Direct.
+              Novas inspirações desta linha estarão disponíveis em breve. Enquanto isso, conte sua ideia pelo WhatsApp.
             </p>
           )}
         </Container>

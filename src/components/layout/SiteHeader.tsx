@@ -13,11 +13,15 @@ const navigation = [
   { href: '/#como-funciona', label: 'Como funciona' },
 ];
 
+const footerInformationRoutes = new Set(['/envio-nacional', '/perguntas-frequentes', '/privacidade']);
+
 export function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
-  const usesEditorialHero = pathname === '/' || pathname.startsWith('/catalogo') || pathname.startsWith('/solicitar-orcamento');
+  const usesEditorialHero = pathname === '/' || pathname.startsWith('/catalogo');
+  const isRequestRoute = pathname.startsWith('/solicitar-orcamento');
+  const isFooterInformationRoute = footerInformationRoutes.has(pathname);
 
   useEffect(() => {
     const updateScrollState = () => setIsScrolled(window.scrollY > 24);
@@ -26,9 +30,13 @@ export function SiteHeader() {
     return () => window.removeEventListener('scroll', updateScrollState);
   }, []);
 
-  const headerClassName = usesEditorialHero
-    ? isScrolled ? 'site-header site-header--scrolled' : 'site-header site-header--overlay'
-    : 'site-header site-header--standard';
+  const headerClassName = isRequestRoute
+    ? 'site-header site-header--request'
+    : isFooterInformationRoute
+      ? 'site-header site-header--footer-info'
+    : usesEditorialHero
+      ? isScrolled ? 'site-header site-header--scrolled' : 'site-header site-header--overlay'
+      : 'site-header site-header--standard';
 
   return (
     <header className={headerClassName}>
@@ -52,9 +60,8 @@ export function SiteHeader() {
               {item.label}
             </a>
           ))}
-          <Link href="/solicitar-orcamento" onClick={() => setIsOpen(false)}>Solicitar sua peça</Link>
         </nav>
-        <div className="header-actions"><Link className="header-catalog-link" href="/catalogo">Ver catálogo</Link><Link className="header-request-link" href="/solicitar-orcamento">Solicitar sua peça</Link></div>
+        <div className="header-actions"><Link className="header-catalog-link" href="/catalogo">Ver catálogo</Link></div>
       </Container>
     </header>
   );

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createInquiryPostHandler } from '@/app/api/inquiries/route';
 import type { CatalogProduct } from '@/features/catalog/types';
 
@@ -36,5 +36,27 @@ describe('notificação imediata da solicitação', () => {
     const response = await post(request());
 
     expect(response.status).toBe(201);
+  });
+
+  it('registra a etapa técnica quando falha antes de persistir o lead', async () => {
+    const report = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const post = createInquiryPostHandler({
+      expectedOrigin: 'https://damazio.example',
+      loadProduct: async () => { throw new Error('Variável de ambiente obrigatória ausente: SUPABASE_SERVICE_ROLE_KEY'); },
+      rateLimit: () => true,
+    });
+
+    try {
+      const response = await post(request());
+
+      expect(response.status).toBe(500);
+      expect(report).toHaveBeenCalledWith('inquiry_submission_failed', {
+        stage: 'load_product',
+        name: 'Error',
+        message: 'Variável de ambiente obrigatória ausente: SUPABASE_SERVICE_ROLE_KEY',
+      });
+    } finally {
+      report.mockRestore();
+    }
   });
 });

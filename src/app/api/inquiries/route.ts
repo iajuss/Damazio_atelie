@@ -54,21 +54,30 @@ function parseInput(data: FormData): InquiryInput | null {
   };
 }
 
+function internalFailureDetails(error: unknown): { name: string; message: string } {
+  if (error instanceof Error) return { name: error.name, message: error.message.slice(0, 200) };
+  return { name: 'UnknownError', message: 'Unknown inquiry submission failure.' };
+}
+
 export function createInquiryPostHandler(dependencies: InquiryHandlerDependencies = {}) {
   return async function post(request: Request): Promise<Response> {
     const allowedOrigins = dependencies.allowedOrigins ?? (dependencies.expectedOrigin ? [dependencies.expectedOrigin] : configuredInquiryOrigins());
     if (!isTrustedOrigin(request, allowedOrigins)) return errorResponse(400, 'VALIDACAO', 'Não foi possível validar o envio.');
     if (!(dependencies.rateLimit ?? allowInquiryRequest)(requestClientKey(request, trustProxyHeaders()))) return errorResponse(429, 'LIMITE_DE_ENVIO', 'Aguarde um instante antes de tentar novamente.');
 
+    let stage: 'read_form' | 'load_product' | 'persist_inquiry' = 'read_form';
+
     try {
       const data = await request.formData();
       if (asText(data, 'website')) return errorResponse(400, 'VALIDACAO', 'Não foi possível validar o envio.');
       const input = parseInput(data);
       if (!input) return errorResponse(400, 'VALIDACAO', 'Confira os dados informados.');
+      stage = 'load_product';
       const loadProduct = dependencies.loadProduct ?? (await import('@/features/catalog/repository')).getPublishedProductBySlug;
       const product = input.requestKind === 'product' ? await loadProduct(input.productSlug) : null;
       const validation = validateInquiryInput(input, product);
       if (!validation.success) return errorResponse(400, 'VALIDACAO', 'Confira os campos informados.', validation.errors);
+      stage = 'persist_inquiry';
       const saveInquiry = dependencies.createInquiry ?? (await import('@/features/inquiries/service')).createInquiry;
       const result = await saveInquiry(input, product);
       const deliverNotifications = dependencies.deliverNotifications ?? (await import('@/features/inquiries/lead-notifications')).deliverLeadNotifications;
@@ -84,6 +93,7 @@ export function createInquiryPostHandler(dependencies: InquiryHandlerDependencie
         if (submission.kind === 'validation') return errorResponse(400, 'VALIDACAO', 'Confira os campos informados.', submission.errors);
         if (submission.kind === 'payload_too_large') return errorResponse(413, 'ARQUIVO_MUITO_GRANDE', 'A referência excede o limite permitido.', submission.errors);
       }
+      console.error('inquiry_submission_failed', { stage, ...internalFailureDetails(error) });
       return errorResponse(500, 'ERRO_INTERNO', 'Não foi possível enviar a solicitação. Tente novamente em instantes.');
     }
   };

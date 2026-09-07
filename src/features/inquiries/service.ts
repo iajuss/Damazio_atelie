@@ -22,6 +22,16 @@ export type InquiryServiceDependencies = {
   createRequestCode?: () => string;
 };
 
+function providerFailureDetails(error: unknown): { code: string; message: string } {
+  if (typeof error !== 'object' || error === null) return { code: 'unknown', message: 'Unknown provider failure.' };
+
+  const candidate = error as { code?: unknown; message?: unknown };
+  return {
+    code: typeof candidate.code === 'string' ? candidate.code : 'unknown',
+    message: typeof candidate.message === 'string' ? candidate.message.slice(0, 200) : 'Unknown provider failure.',
+  };
+}
+
 export async function createInquiry(input: InquiryInput, product: CatalogProduct | null, dependencies: InquiryServiceDependencies = {}): Promise<InquiryResult> {
   const validation = validateInquiryInput(input, product);
   if (!validation.success) throw new InquirySubmissionError('validation', validation.errors);
@@ -33,16 +43,18 @@ export async function createInquiry(input: InquiryInput, product: CatalogProduct
   const bucket = client.storage.from(INQUIRY_REFERENCES_BUCKET);
   const uploadedPaths: string[] = [];
   const attachmentRows: Array<{ storage_path: string; original_filename: string; mime_type: string; byte_size: number }> = [];
+  let stage: 'attachment_upload' | 'persistence' = 'attachment_upload';
 
   try {
     for (const attachment of attachments) {
       const storagePath = createPrivateAttachmentPath(requestCode, attachment.file.name);
       const upload = await bucket.upload(storagePath, attachment.file, { contentType: attachment.mimeType, upsert: false });
-      if (upload.error) throw new Error('Falha ao guardar referência privada.');
+      if (upload.error) throw upload.error;
       uploadedPaths.push(storagePath);
       attachmentRows.push({ storage_path: storagePath, original_filename: attachment.file.name, mime_type: attachment.mimeType, byte_size: attachment.byteSize });
     }
 
+    stage = 'persistence';
     const persisted = await client.rpc('create_inquiry_with_answers', {
       p_request_code: requestCode, p_product_id: product?.id ?? null, p_request_kind: validation.data.requestKind, p_name: validation.data.name, p_contact: validation.data.contact,
       p_city: validation.data.city, p_state: validation.data.state, p_occasion: validation.data.occasion,
@@ -66,8 +78,10 @@ export async function createInquiry(input: InquiryInput, product: CatalogProduct
         })),
       },
     });
-    if (persisted.error || !persisted.data?.inquiry_id) throw new Error('Falha ao registrar solicitação.');
-  } catch {
+    if (persisted.error) throw persisted.error;
+    if (!persisted.data?.inquiry_id) throw new Error('The inquiry RPC did not return an identifier.');
+  } catch (error) {
+    console.error('inquiry_submission_provider_failure', { stage, ...providerFailureDetails(error) });
     if (uploadedPaths.length > 0) await bucket.remove(uploadedPaths);
     throw new InquirySubmissionError('provider');
   }

@@ -78,4 +78,25 @@ describe('persistência de solicitação', () => {
   it('rejeita mais referências que o limite antes de gravar', async () => {
     await expect(createInquiry(input({ attachments: [pngFile('1.png'), pngFile('2.png'), pngFile('3.png'), pngFile('4.png')] }), product, { client: { rpc: async () => ({ data: null, error: null }), storage: { from: () => ({ upload: async () => ({ error: null }), remove: async () => ({ error: null }) }) } } })).rejects.toMatchObject({ kind: 'payload_too_large' });
   });
+
+  it('registra um diagnóstico técnico seguro quando a persistência no Supabase falha', async () => {
+    const report = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    try {
+      await expect(createInquiry(input(), product, {
+        client: {
+          rpc: async () => ({ data: null, error: { code: 'PGRST202', message: 'Função de gravação não encontrada.' } }),
+          storage: { from: () => ({ upload: async () => ({ error: null }), remove: async () => ({ error: null }) }) },
+        },
+      })).rejects.toMatchObject({ kind: 'provider' });
+
+      expect(report).toHaveBeenCalledWith('inquiry_submission_provider_failure', {
+        stage: 'persistence',
+        code: 'PGRST202',
+        message: 'Função de gravação não encontrada.',
+      });
+    } finally {
+      report.mockRestore();
+    }
+  });
 });

@@ -4,12 +4,15 @@ import type { InquiryInput, InquiryKind, InquiryResult } from '@/features/inquir
 import { allowInquiryRequest } from '@/lib/rate-limit';
 import { configuredInquiryOrigins, isTrustedOrigin, requestClientKey, trustProxyHeaders } from '@/lib/security';
 
+type DeliverNotifications = (options: { requestCode?: string; limit?: number }) => Promise<void>;
+
 type InquiryHandlerDependencies = {
   expectedOrigin?: string;
   allowedOrigins?: readonly string[];
   loadProduct?: (slug: string) => Promise<CatalogProduct | null>;
   rateLimit?: (key: string) => boolean;
   createInquiry?: (input: InquiryInput, product: CatalogProduct | null) => Promise<InquiryResult>;
+  deliverNotifications?: DeliverNotifications;
 };
 
 const MAX_ANSWERS_JSON_LENGTH = 16_384;
@@ -68,6 +71,12 @@ export function createInquiryPostHandler(dependencies: InquiryHandlerDependencie
       if (!validation.success) return errorResponse(400, 'VALIDACAO', 'Confira os campos informados.', validation.errors);
       const saveInquiry = dependencies.createInquiry ?? (await import('@/features/inquiries/service')).createInquiry;
       const result = await saveInquiry(input, product);
+      const deliverNotifications = dependencies.deliverNotifications ?? (await import('@/features/inquiries/lead-notifications')).deliverLeadNotifications;
+      try {
+        await deliverNotifications({ requestCode: result.requestCode, limit: 1 });
+      } catch {
+        // O lead já foi persistido de forma atômica e será recuperado pelo cron protegido.
+      }
       return Response.json(result, { status: 201, headers: privateResponseHeaders });
     } catch (error) {
       if (typeof error === 'object' && error && 'kind' in error) {

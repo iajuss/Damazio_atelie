@@ -15,11 +15,30 @@ function request(data: FormData) {
 }
 
 test('aceita multipart válido e retorna somente o protocolo público', async () => {
-  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', loadProduct: async () => product, rateLimit: () => true, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  const deliveries: unknown[] = [];
+  const post = createInquiryPostHandler({
+    expectedOrigin: 'https://damazio.example', loadProduct: async () => product, rateLimit: () => true,
+    createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }),
+    deliverNotifications: async (options) => { deliveries.push(options); },
+  });
   const response = await post(request(form()));
   await expect(response.json()).resolves.toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
   expect(response.status).toBe(201);
   expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow, noarchive');
+  expect(deliveries).toEqual([{ requestCode: 'AB12CD34EF56GH78IJ90', limit: 1 }]);
+});
+
+test('confirma a solicitação mesmo quando a notificação imediata falha', async () => {
+  const post = createInquiryPostHandler({
+    expectedOrigin: 'https://damazio.example', loadProduct: async () => product, rateLimit: () => true,
+    createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }),
+    deliverNotifications: async () => { throw new Error('SMTP indisponível'); },
+  });
+
+  const response = await post(request(form()));
+
+  expect(response.status).toBe(201);
+  await expect(response.json()).resolves.toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
 });
 
 test('aceita criação livre e gera protocolo sem carregar uma inspiração', async () => {

@@ -23,7 +23,7 @@ export type LeadEmailConfig = {
   to: string;
 };
 
-type MailEnvironment = Pick<NodeJS.ProcessEnv, 'GMAIL_SMTP_USER' | 'GMAIL_SMTP_APP_PASSWORD' | 'GMAIL_SMTP_FROM' | 'LEAD_NOTIFICATION_TO'>;
+type MailEnvironment = Record<string, string | undefined>;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

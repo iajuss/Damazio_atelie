@@ -9,6 +9,7 @@ import { Container } from '@/components/ui/Container';
 
 const navigation = [
   { href: '/#inicio', label: 'Home' },
+  { href: '/catalogo', label: 'Catálogo', mobileOnly: true },
   { href: '/#sobre', label: 'Sobre' },
   { href: '/#como-funciona', label: 'Como funciona' },
 ];
@@ -56,7 +57,7 @@ export function SiteHeader() {
         </button>
         <nav id="navegacao-principal" className={isOpen ? 'site-nav site-nav--open' : 'site-nav'} aria-label="Navegação principal">
           {navigation.map((item) => (
-            <a href={item.href} key={item.href} onClick={() => setIsOpen(false)}>
+            <a className={item.mobileOnly ? 'site-nav__mobile-only' : undefined} href={item.href} key={item.href} onClick={() => setIsOpen(false)}>
               {item.label}
             </a>
           ))}

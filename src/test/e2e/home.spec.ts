@@ -22,12 +22,23 @@ test('o menu móvel alterna o nome acessível e mantém alvos de toque utilizáv
 
   const navigation = page.getByRole('navigation', { name: 'Navegação principal' });
   const homeLink = navigation.getByRole('link', { name: 'Home' });
+  const catalogLink = navigation.getByRole('link', { name: 'Catálogo' });
   const privacyLink = page.locator('footer').getByRole('link', { name: 'Privacidade' });
   await expect(homeLink).toHaveAttribute('href', '/#inicio');
+  await expect(catalogLink).toHaveAttribute('href', '/catalogo');
   await expect(navigation).toHaveCSS('background-color', 'rgb(47, 42, 39)');
   await expect(homeLink).toHaveCSS('color', 'rgb(255, 250, 242)');
   await expect(homeLink).toHaveCSS('min-height', '44px');
   await expect(privacyLink).toHaveCSS('min-height', '44px');
+});
+
+test('o catálogo permanece como CTA próprio no header de desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/');
+
+  const header = page.getByRole('banner');
+  await expect(header.locator('.site-nav').getByRole('link', { name: 'Catálogo' })).toHaveCount(0);
+  await expect(header.getByRole('link', { name: 'Ver catálogo' })).toHaveAttribute('href', '/catalogo');
 });
 
 test('a home apresenta a história do atelier antes dos caminhos e do catálogo', async ({ page }) => {

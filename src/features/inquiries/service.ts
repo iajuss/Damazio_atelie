@@ -13,7 +13,7 @@ type StorageBucket = {
 };
 
 export type InquiryServerClient = {
-  rpc: (name: 'create_inquiry_with_answers', payload: Record<string, unknown>) => Promise<{ data: { inquiry_id: string } | null; error: unknown | null }>;
+  rpc: (name: 'create_inquiry_with_answers', payload: Record<string, unknown>) => Promise<{ data: { inquiry_id: string } | Array<{ inquiry_id: string }> | null; error: unknown | null }>;
   storage: { from: (bucket: typeof INQUIRY_REFERENCES_BUCKET) => StorageBucket };
 };
 
@@ -30,6 +30,11 @@ function providerFailureDetails(error: unknown): { code: string; message: string
     code: typeof candidate.code === 'string' ? candidate.code : 'unknown',
     message: typeof candidate.message === 'string' ? candidate.message.slice(0, 200) : 'Unknown provider failure.',
   };
+}
+
+function inquiryIdFromRpcData(data: { inquiry_id: string } | Array<{ inquiry_id: string }> | null): string | null {
+  const record = Array.isArray(data) ? data[0] : data;
+  return typeof record?.inquiry_id === 'string' && record.inquiry_id ? record.inquiry_id : null;
 }
 
 export async function createInquiry(input: InquiryInput, product: CatalogProduct | null, dependencies: InquiryServiceDependencies = {}): Promise<InquiryResult> {
@@ -79,7 +84,7 @@ export async function createInquiry(input: InquiryInput, product: CatalogProduct
       },
     });
     if (persisted.error) throw persisted.error;
-    if (!persisted.data?.inquiry_id) throw new Error('The inquiry RPC did not return an identifier.');
+    if (!inquiryIdFromRpcData(persisted.data)) throw new Error('The inquiry RPC did not return an identifier.');
   } catch (error) {
     console.error('inquiry_submission_provider_failure', { stage, ...providerFailureDetails(error) });
     if (uploadedPaths.length > 0) await bucket.remove(uploadedPaths);

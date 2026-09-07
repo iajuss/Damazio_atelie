@@ -22,6 +22,14 @@ test('aceita multipart válido e retorna somente o protocolo público', async ()
   expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow, noarchive');
 });
 
+test('aceita criação livre e gera protocolo sem carregar uma inspiração', async () => {
+  let productWasLoaded = false;
+  const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true, loadProduct: async () => { productWasLoaded = true; return product; }, createInquiry: async () => ({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }) });
+  const response = await post(request(form({ requestKind: 'custom', productSlug: '', description: 'Quero uma peça para presentear minha mãe.', answers: '{}' })));
+  expect(response.status).toBe(201);
+  expect(productWasLoaded).toBe(false);
+});
+
 test('retorna erros de campos, bloqueia excesso e não disponibiliza leitura anônima de referências', async () => {
   const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', loadProduct: async () => product, rateLimit: () => true, createInquiry: async () => { throw { kind: 'payload_too_large' }; } });
   const bad = await post(request(form({ name: '' })));

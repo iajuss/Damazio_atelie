@@ -9,6 +9,7 @@ describe('InquiryConfirmation', () => {
     expect(screen.getByText('AB12CD34EF56GH78IJ90')).toBeInTheDocument();
     expect(screen.getByText(/o orçamento, o prazo e o frete serão confirmados no Direct/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Abrir Instagram' })).toHaveAttribute('href', INSTAGRAM_PROFILE_URL);
+    expect(screen.getByRole('link', { name: 'Enviar e-mail' })).toHaveAttribute('href', expect.stringContaining('mailto:damazioatelier@gmail.com?subject=Solicita%C3%A7%C3%A3o+AB12CD34EF56GH78IJ90'));
   });
 
   it('copia o código de forma segura quando a área de transferência é suportada', async () => {

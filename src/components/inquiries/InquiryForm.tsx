@@ -2,14 +2,14 @@
 
 import { FormEvent, useState } from 'react';
 import type { CatalogProduct } from '@/features/catalog/types';
-import type { InquiryResult } from '@/features/inquiries/types';
+import type { InquiryKind, InquiryResult } from '@/features/inquiries/types';
 import { CustomizationInput } from './CustomizationInput';
 import { InquiryConfirmation } from './InquiryConfirmation';
 import { ReferenceUpload } from './ReferenceUpload';
 import { ErrorSummary } from '@/components/ui/ErrorSummary';
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-type InquiryFormProps = { product: CatalogProduct; fetcher?: Fetcher };
+type InquiryFormProps = { product?: CatalogProduct; requestKind?: InquiryKind; fetcher?: Fetcher };
 
 function inputErrorId(name: string): string { return `erro-${name.replace('.', '-')}`; }
 
@@ -18,13 +18,13 @@ function formText(data: FormData, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
+export function InquiryForm({ product, requestKind = 'product', fetcher = fetch }: InquiryFormProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submissionError, setSubmissionError] = useState('');
   const [result, setResult] = useState<InquiryResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fields = [...product.customizationFields].sort((a, b) => a.sortOrder - b.sortOrder);
+  const fields = [...(product?.customizationFields ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
 
   function fieldProps(name: 'name' | 'contact' | 'city' | 'state' | 'occasion' | 'description') {
     const error = errors[name];
@@ -50,7 +50,8 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
     setSubmissionError('');
     setIsSubmitting(true);
     const data = new FormData();
-    data.set('productSlug', product.slug);
+    data.set('requestKind', requestKind);
+    data.set('productSlug', product?.slug ?? '');
     data.set('name', submittedValues.name);
     data.set('contact', submittedValues.contact);
     data.set('city', submittedValues.city);
@@ -93,7 +94,7 @@ export function InquiryForm({ product, fetcher = fetch }: InquiryFormProps) {
     </div>
     {fields.length > 0 ? <fieldset className="inquiry-form__customization"><legend>Personalize sua peça</legend>{fields.map((field) => <CustomizationInput key={field.key} field={field} error={errors[`answers.${field.key}`]} />)}</fieldset> : null}
     <div className="inquiry-field"><label htmlFor="occasion">Ocasião ou momento especial <span className="reference-upload__optional">(opcional)</span></label><input id="occasion" name="occasion" type="text" {...fieldProps('occasion')} />{errors.occasion ? <p id={inputErrorId('occasion')} className="inquiry-field__error">{errors.occasion}</p> : null}</div>
-    <div className="inquiry-field"><label htmlFor="description">Conte um pouco mais sobre sua ideia <span className="reference-upload__optional">(opcional)</span></label><textarea id="description" name="description" rows={5} {...fieldProps('description')} />{errors.description ? <p id={inputErrorId('description')} className="inquiry-field__error">{errors.description}</p> : null}</div>
+    <div className="inquiry-field"><label htmlFor="description">{requestKind === 'custom' ? 'Conte a sua ideia *' : <>Conte um pouco mais sobre sua ideia <span className="reference-upload__optional">(opcional)</span></>}</label><textarea id="description" name="description" rows={5} required={requestKind === 'custom'} {...fieldProps('description')} />{errors.description ? <p id={inputErrorId('description')} className="inquiry-field__error">{errors.description}</p> : null}</div>
     <ReferenceUpload files={files} isUploading={isSubmitting} error={errors.attachments} onAdd={(selected) => setFiles((current) => [...current, ...selected].slice(0, 3))} onRemove={(index) => setFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))} />
     <div className="inquiry-form__privacy"><label><input type="checkbox" name="privacyAccepted" aria-invalid={Boolean(errors.privacyAccepted)} aria-describedby={errors.privacyAccepted ? inputErrorId('privacyAccepted') : undefined} /> Li e aceito a política de privacidade para que a Damazio Atelier responda a esta solicitação.</label>{errors.privacyAccepted ? <p id={inputErrorId('privacyAccepted')} className="inquiry-field__error">{errors.privacyAccepted}</p> : null}</div>
     <button type="submit" className="button button--primary inquiry-form__submit" disabled={isSubmitting}>{isSubmitting ? 'Enviando solicitação…' : 'Enviar solicitação'}</button>

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { InquiryForm } from '@/components/inquiries/InquiryForm';
+import { RequestExperience } from '@/components/inquiries/RequestExperience';
 import { ProductDetails } from '@/components/catalog/ProductDetails';
 import { Container } from '@/components/ui/Container';
 import { getCatalogProductBySlug } from '@/features/content/repository';
@@ -22,5 +22,5 @@ export default async function RequestPage({ params }: RequestPageProps) {
   if (!product) notFound();
   if (product.availability === 'unavailable') return <main id="conteudo" tabIndex={-1}><Container className="request-page"><ProductDetails product={product} /></Container></main>;
 
-  return <main id="conteudo" tabIndex={-1}><Container className="request-page"><section className="request-page__intro"><p className="eyebrow">{product.name}</p><h1>Solicite sua peça</h1><p>Conte sua ideia com calma. A Damazio entra em contato pelo Direct para alinhar os próximos detalhes.</p></section><InquiryForm product={product} /></Container></main>;
+  return <RequestExperience requestKind="product" product={product} />;
 }

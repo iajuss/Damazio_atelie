@@ -1,6 +1,6 @@
 import type { CatalogProduct } from '@/features/catalog/types';
 import { normalizeProductSlug, validateInquiryInput } from '@/features/inquiries/schema';
-import type { InquiryInput, InquiryResult } from '@/features/inquiries/types';
+import type { InquiryInput, InquiryKind, InquiryResult } from '@/features/inquiries/types';
 import { allowInquiryRequest } from '@/lib/rate-limit';
 import { configuredInquiryOrigins, isTrustedOrigin, requestClientKey, trustProxyHeaders } from '@/lib/security';
 
@@ -41,7 +41,10 @@ function parseInput(data: FormData): InquiryInput | null {
       answers = parsed as Record<string, string>;
     } catch { return null; }
   }
+  const requestKind = asText(data, 'requestKind') || 'product';
+  if (requestKind !== 'product' && requestKind !== 'custom') return null;
   return {
+    requestKind: requestKind as InquiryKind,
     productSlug: normalizeProductSlug(asText(data, 'productSlug')), name: asText(data, 'name'), contact: asText(data, 'contact'), city: asText(data, 'city'),
     state: asText(data, 'state'), occasion: asText(data, 'occasion'), description: asText(data, 'description'), answers,
     privacyAccepted: asText(data, 'privacyAccepted') === 'true', attachments: data.getAll('attachments').filter((value): value is File => typeof value !== 'string'),
@@ -60,7 +63,7 @@ export function createInquiryPostHandler(dependencies: InquiryHandlerDependencie
       const input = parseInput(data);
       if (!input) return errorResponse(400, 'VALIDACAO', 'Confira os dados informados.');
       const loadProduct = dependencies.loadProduct ?? (await import('@/features/catalog/repository')).getPublishedProductBySlug;
-      const product = await loadProduct(input.productSlug);
+      const product = input.requestKind === 'product' ? await loadProduct(input.productSlug) : null;
       const validation = validateInquiryInput(input, product);
       if (!validation.success) return errorResponse(400, 'VALIDACAO', 'Confira os campos informados.', validation.errors);
       const saveInquiry = dependencies.createInquiry ?? (await import('@/features/inquiries/service')).createInquiry;

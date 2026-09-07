@@ -23,9 +23,25 @@ describe('validação de solicitação', () => {
     expect(validateInquiryInput(validInput(), product)).toEqual({
       success: true,
       data: expect.objectContaining({
-        productSlug: 'toalha-bordada', name: 'Ana Silva', contact: 'ana@example.com', city: 'São Paulo', state: 'SP',
+        requestKind: 'product', productSlug: 'toalha-bordada', name: 'Ana Silva', contact: 'ana@example.com', city: 'São Paulo', state: 'SP',
         answers: { nome_bordado: 'Ana' }, privacyAccepted: true,
       }),
+    });
+  });
+
+  it('aceita uma criação livre com ideia e sem inspiração selecionada', () => {
+    expect(validateInquiryInput(validInput({ requestKind: 'custom', productSlug: '', description: 'Uma bolsa com flores bordadas', answers: {} }), null)).toEqual({
+      success: true,
+      data: expect.objectContaining({ requestKind: 'custom', productSlug: null, description: 'Uma bolsa com flores bordadas' }),
+    });
+  });
+
+  it('exige ideia e rejeita respostas de produto na criação livre', () => {
+    expect(validateInquiryInput(validInput({ requestKind: 'custom', productSlug: '', description: '', answers: {} }), null)).toMatchObject({
+      success: false, errors: { description: 'Conte a sua ideia para continuar.' },
+    });
+    expect(validateInquiryInput(validInput({ requestKind: 'custom', productSlug: '', description: 'Uma criação especial', answers: { nome_bordado: 'Ana' } }), null)).toMatchObject({
+      success: false, errors: { answers: expect.any(String) },
     });
   });
 

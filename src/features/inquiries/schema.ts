@@ -1,5 +1,5 @@
 import type { CatalogProduct } from '@/features/catalog/types';
-import type { InquiryInput, InquiryValidation, ValidInquiryInput } from './types';
+import type { InquiryInput, InquiryKind, InquiryValidation, ValidInquiryInput } from './types';
 
 const limits = { name: 160, contact: 200, city: 120, occasion: 160, description: 4000, answer: 4000 } as const;
 const answerKeyPattern = /^[a-z][a-z0-9_]{0,63}$/;
@@ -34,6 +34,7 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   const description = normalize(input.description);
   const answerEntries = Object.entries(input.answers ?? {});
   const answers = Object.fromEntries(answerEntries.map(([key, value]) => [key, normalize(value)]));
+  const requestKind: InquiryKind = input.requestKind ?? 'product';
 
   validateRequired(errors, 'name', name);
   validateRequired(errors, 'contact', contact);
@@ -47,7 +48,12 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
     errors.answers = 'Confira os campos de personalização informados.';
   }
 
-  if (!product || product.slug !== normalizeProductSlug(input.productSlug)) {
+  const normalizedProductSlug = normalizeProductSlug(input.productSlug);
+  if (requestKind === 'custom') {
+    if (!description) errors.description = 'Conte a sua ideia para continuar.';
+    if (normalizedProductSlug) errors.productSlug = 'Confira a criação informada.';
+    if (answerEntries.length > 0) errors.answers = 'Confira os campos de personalização informados.';
+  } else if (!product || product.slug !== normalizedProductSlug) {
     errors.productSlug = 'A peça selecionada não foi encontrada.';
   } else if (product.availability === 'unavailable') {
     errors.productSlug = 'Esta peça não está disponível para solicitação no momento.';
@@ -73,7 +79,7 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   if (Object.keys(errors).length > 0) return { success: false, errors };
 
   const data: ValidInquiryInput = {
-    productSlug: normalizeProductSlug(input.productSlug), name, contact, city, state, occasion: occasion || null,
+    requestKind, productSlug: requestKind === 'custom' ? null : normalizedProductSlug, name, contact, city, state, occasion: occasion || null,
     description: description || null, answers, privacyAccepted: true, attachments: input.attachments,
   };
   return { success: true, data };

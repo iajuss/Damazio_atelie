@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function NotFound() {
-  return <main id="conteudo" tabIndex={-1}><section className="institutional-hero"><Container><p className="eyebrow">Caminho não encontrado</p><h1>Página não encontrada</h1><p>Esta página não está disponível. Você pode voltar ao catálogo para encontrar uma nova inspiração.</p><Button href="/catalogo">Voltar ao catálogo</Button></Container></section></main>;
+  return <main id="conteudo" className="not-found-page" tabIndex={-1}><section className="institutional-hero"><Container><p className="eyebrow">Caminho não encontrado</p><h1>Página não encontrada</h1><p>Esta página não está disponível. Você pode voltar ao catálogo para encontrar uma nova inspiração.</p><Button href="/catalogo">Voltar ao catálogo</Button></Container></section></main>;
 }
 

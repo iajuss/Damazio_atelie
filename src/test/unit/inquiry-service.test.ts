@@ -36,6 +36,15 @@ describe('persistência de solicitação', () => {
     expect(uploads).toEqual([[expect.stringMatching(/^AB12CD34EF56GH78IJ90\/[0-9a-f-]{36}\.png$/), 'referencia.png', { contentType: 'image/png', upsert: false }]]);
   });
 
+  it('persiste uma criação livre sem produto, mantendo o protocolo privado', async () => {
+    const calls: unknown[] = [];
+    await createInquiry(input({ requestKind: 'custom', productSlug: '', description: 'Uma bolsa feita para minha mãe.' }), null, {
+      createRequestCode: () => 'AB12CD34EF56GH78IJ90',
+      client: { rpc: async (name, payload) => { calls.push([name, payload]); return { data: { inquiry_id: 'inquiry-1' }, error: null }; }, storage: { from: () => ({ upload: async () => ({ error: null }), remove: async () => ({ error: null }) }) } },
+    });
+    expect(calls).toEqual([[ 'create_inquiry_with_answers', expect.objectContaining({ p_request_kind: 'custom', p_product_id: null, p_answers: {} }) ]]);
+  });
+
   it.each([
     ['formato inválido', new File(['texto'], 'referencia.gif', { type: 'image/gif' })],
     ['arquivo vazio', new File([], 'referencia.png', { type: 'image/png' })],

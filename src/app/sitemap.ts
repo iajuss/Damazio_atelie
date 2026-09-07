@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 const staticPublicPaths = [
   '/',
   '/catalogo',
+  '/solicitar-orcamento',
   '/sobre',
   '/como-funciona',
   '/envio-nacional',

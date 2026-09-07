@@ -62,6 +62,16 @@ describe('persistência de solicitação', () => {
     expect(calls).toEqual([[ 'create_inquiry_with_answers', expect.objectContaining({ p_request_kind: 'custom', p_product_id: null, p_answers: {} }) ]]);
   });
 
+  it('aceita o identificador retornado em lista pela função RPC do Supabase', async () => {
+    await expect(createInquiry(input(), product, {
+      createRequestCode: () => 'AB12CD34EF56GH78IJ90',
+      client: {
+        rpc: async () => ({ data: [{ inquiry_id: 'inquiry-1' }] as never, error: null }),
+        storage: { from: () => ({ upload: async () => ({ error: null }), remove: async () => ({ error: null }) }) },
+      },
+    })).resolves.toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
+  });
+
   it.each([
     ['formato inválido', new File(['texto'], 'referencia.gif', { type: 'image/gif' })],
     ['arquivo vazio', new File([], 'referencia.png', { type: 'image/png' })],

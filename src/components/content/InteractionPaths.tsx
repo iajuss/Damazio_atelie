@@ -6,10 +6,10 @@ import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 
 const paths = [
-  ['Bordado afetivo', 'Um nome, uma data ou uma mensagem pode virar um gesto guardado na peça.', '/catalogo/bordado'],
-  ['Crochê autoral', 'Texturas, cores e formas feitas à mão para acompanhar sua rotina com presença.', '/catalogo/croche'],
-  ['Presentes com história', 'A escolha parte da ocasião e ganha detalhes pensados para quem vai receber.', '/catalogo/presentes'],
-  ['Criação sob medida', 'Conte o que imagina para que a Damazio avalie uma peça criada a partir da sua ideia.', '/catalogo'],
+  ['Bordado afetivo', 'Um nome, uma data ou uma mensagem pode virar um gesto guardado na peça.', '/catalogo/bordados-em-roupas'],
+  ['Crochê autoral', 'Texturas, cores e formas feitas à mão para acompanhar sua rotina com presença.', '/catalogo/bolsas-de-croche'],
+  ['Presentes com história', 'A escolha parte da ocasião e ganha detalhes pensados para quem vai receber.', '/catalogo/presentes-e-embalagens'],
+  ['Criação sob medida', 'Conte o que imagina para que a Damazio avalie uma peça criada a partir da sua ideia.', '/solicitar-orcamento'],
 ] as const;
 
 export function InteractionPaths() {

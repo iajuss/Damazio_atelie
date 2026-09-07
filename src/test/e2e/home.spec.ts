@@ -19,9 +19,12 @@ test('o menu móvel alterna o nome acessível e mantém alvos de toque utilizáv
   await menuControl.click();
   await expect(page.getByRole('button', { name: 'Fechar menu de navegação' })).toHaveAttribute('aria-expanded', 'true');
 
-  const homeLink = page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('link', { name: 'Home' });
+  const navigation = page.getByRole('navigation', { name: 'Navegação principal' });
+  const homeLink = navigation.getByRole('link', { name: 'Home' });
   const privacyLink = page.locator('footer').getByRole('link', { name: 'Privacidade' });
   await expect(homeLink).toHaveAttribute('href', '/#inicio');
+  await expect(navigation).toHaveCSS('background-color', 'rgb(47, 42, 39)');
+  await expect(homeLink).toHaveCSS('color', 'rgb(255, 250, 242)');
   await expect(homeLink).toHaveCSS('min-height', '44px');
   await expect(privacyLink).toHaveCSS('min-height', '44px');
 });
@@ -70,6 +73,23 @@ test('a home transforma os caminhos de criação em uma escolha interativa e evi
   await paths.getByRole('tab', { name: 'Bordado afetivo' }).click();
   await expect(paths.getByText(/um nome, uma data ou uma mensagem/i)).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Inspirações para começar' })).toHaveCount(0);
+});
+
+test('os caminhos de criação levam às linhas existentes ou ao pedido sob medida', async ({ page }) => {
+  await page.goto('/');
+
+  const paths = page.getByRole('region', { name: 'Quatro caminhos de interação' });
+  const destinations = [
+    ['Bordado afetivo', '/catalogo/bordados-em-roupas'],
+    ['Crochê autoral', '/catalogo/bolsas-de-croche'],
+    ['Presentes com história', '/catalogo/presentes-e-embalagens'],
+    ['Criação sob medida', '/solicitar-orcamento'],
+  ] as const;
+
+  for (const [tabName, destination] of destinations) {
+    await paths.getByRole('tab', { name: tabName }).click();
+    await expect(paths.getByRole('link', { name: 'Conhecer essa linha' })).toHaveAttribute('href', destination);
+  }
 });
 
 test('a home combina logo transparente, hero em transição e FAQ expansível', async ({ page }) => {

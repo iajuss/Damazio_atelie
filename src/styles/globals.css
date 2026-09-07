@@ -39,8 +39,9 @@ body:has(.not-found-page) .site-header--overlay { position: sticky; top: 0; bord
 .menu-toggle { border: 1px solid var(--color-ink); background: transparent; color: var(--color-ink); }
 .site-nav { display: none; gap: .5rem; }
 .header-actions { display: none; gap: .5rem; }
-.site-nav--open { display: flex; flex-direction: column; position: absolute; top: 4.5rem; right: 1rem; padding: 1rem; border: 1px solid var(--color-line); background: var(--color-paper); box-shadow: 0 1rem 2rem rgb(47 42 39 / .12); }
+.site-nav--open { display: flex; flex-direction: column; position: absolute; top: 4.5rem; right: 1rem; padding: 1rem; border: 1px solid rgb(255 250 242 / .35); background: var(--color-ink); color: #fffaf2; box-shadow: 0 1rem 2rem rgb(47 42 39 / .28); }
 .site-nav a, .site-footer a { display: inline-flex; align-items: center; min-height: 44px; padding: .6rem; text-decoration: none; }
+.site-nav.site-nav--open a { color: #fffaf2; }
 .header-catalog-link { display: none; min-height: 44px; align-items: center; justify-content: center; padding: .6rem 1rem; border-radius: 999px; background: var(--color-ink); color: var(--color-paper); font-weight: 700; text-decoration: none; }
 .site-header--overlay .header-catalog-link { background: rgb(255 250 242 / .16); color: #fffaf2; box-shadow: inset 0 0 0 1px rgb(255 250 242 / .5); }
 .site-header--overlay .site-nav a, .site-header--overlay .menu-toggle { color: #fffaf2; }

@@ -32,7 +32,24 @@ describe('persistência de solicitação', () => {
     });
 
     expect(result).toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
-    expect(calls).toEqual([[ 'create_inquiry_with_answers', expect.objectContaining({ p_request_code: 'AB12CD34EF56GH78IJ90', p_product_id: 'product-1', p_attachments: [expect.objectContaining({ mime_type: 'image/png', byte_size: 8 })] }) ]]);
+    expect(calls).toEqual([[ 'create_inquiry_with_answers', expect.objectContaining({
+      p_request_code: 'AB12CD34EF56GH78IJ90',
+      p_product_id: 'product-1',
+      p_attachments: [expect.objectContaining({ mime_type: 'image/png', byte_size: 8 })],
+      p_notification_payload: {
+        requestCode: 'AB12CD34EF56GH78IJ90',
+        requestKind: 'product',
+        productName: 'Toalha bordada',
+        name: 'Ana',
+        contact: 'ana@example.com',
+        city: 'São Paulo',
+        state: 'SP',
+        occasion: null,
+        description: null,
+        answers: {},
+        attachments: [{ filename: 'referencia.png', mimeType: 'image/png', byteSize: 8 }],
+      },
+    }) ]]);
     expect(uploads).toEqual([[expect.stringMatching(/^AB12CD34EF56GH78IJ90\/[0-9a-f-]{36}\.png$/), 'referencia.png', { contentType: 'image/png', upsert: false }]]);
   });
 

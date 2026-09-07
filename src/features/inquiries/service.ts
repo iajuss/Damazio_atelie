@@ -48,6 +48,23 @@ export async function createInquiry(input: InquiryInput, product: CatalogProduct
       p_city: validation.data.city, p_state: validation.data.state, p_occasion: validation.data.occasion,
       p_description: validation.data.description, p_privacy_accepted_at: new Date().toISOString(), p_answers: validation.data.answers,
       p_attachments: attachmentRows,
+      p_notification_payload: {
+        requestCode,
+        requestKind: validation.data.requestKind,
+        productName: product?.name ?? null,
+        name: validation.data.name,
+        contact: validation.data.contact,
+        city: validation.data.city,
+        state: validation.data.state,
+        occasion: validation.data.occasion,
+        description: validation.data.description,
+        answers: validation.data.answers,
+        attachments: attachmentRows.map(({ original_filename, mime_type, byte_size }) => ({
+          filename: original_filename,
+          mimeType: mime_type,
+          byteSize: byte_size,
+        })),
+      },
     });
     if (persisted.error || !persisted.data?.inquiry_id) throw new Error('Falha ao registrar solicitação.');
   } catch {

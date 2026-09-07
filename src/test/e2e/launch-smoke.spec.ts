@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 const configuredBaseUrl = process.env.LAUNCH_SMOKE_BASE_URL?.trim();
 const launchBaseUrl = configuredBaseUrl ?? 'https://staging-indisponivel.damazio.invalid';
 const productSlug = process.env.LAUNCH_SMOKE_PRODUCT_SLUG?.trim();
-const officialInstagramUrl = 'https://www.instagram.com/damazio.atelier/';
+const officialWhatsAppUrl = 'https://wa.me/5511910771179';
 const smokeSupabaseUrl = process.env.LAUNCH_SMOKE_SUPABASE_URL?.trim();
 const smokeSupabaseAnonKey = process.env.LAUNCH_SMOKE_SUPABASE_ANON_KEY?.trim();
 const remoteSmokeEnabled = Boolean(
@@ -69,7 +69,7 @@ test.describe('smoke de lançamento em staging', () => {
     await expect(page.getByRole('button', { name: 'Enviar solicitação' })).toBeVisible();
   });
 
-  test('uma solicitação de ensaio retorna protocolo e leva ao Instagram oficial', async ({ page }) => {
+  test('uma solicitação de ensaio retorna protocolo e leva ao WhatsApp oficial', async ({ page }) => {
     test.skip(process.env.LAUNCH_SMOKE_ALLOW_WRITE !== 'true', 'Requer autorização explícita para criar uma solicitação de ensaio em staging.');
     const slug = requiredProductSlug();
     await page.goto(launchUrl(`/solicitar-orcamento/${slug}`));
@@ -78,7 +78,7 @@ test.describe('smoke de lançamento em staging', () => {
 
     await expect(page.getByRole('heading', { name: 'Solicitação enviada' })).toBeVisible();
     await expect(page.getByLabel('Código da solicitação')).toHaveText(/^[A-Z0-9]{8,32}$/);
-    await expect(page.getByRole('link', { name: 'Abrir Instagram' })).toHaveAttribute('href', officialInstagramUrl);
+    await expect(page.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveAttribute('href', officialWhatsAppUrl);
   });
 
   test('a API não permite listar referências anonimamente', async ({ request }) => {
@@ -94,9 +94,9 @@ test.describe('smoke de lançamento em staging', () => {
     expect([400, 401, 403]).toContain(response.status());
   });
 
-  test('o destino público do Instagram é o perfil oficial', async ({ page }) => {
+  test('o destino público do WhatsApp é o canal oficial', async ({ page }) => {
     await page.goto(launchUrl('/contato'));
-    await expect(page.getByRole('link', { name: 'Abrir Instagram da Damazio' })).toHaveAttribute('href', officialInstagramUrl);
+    await expect(page.getByRole('link', { name: 'Abrir WhatsApp da Damazio' })).toHaveAttribute('href', officialWhatsAppUrl);
   });
 
   test('o catálogo não oferece preço, compra, carrinho, checkout ou pagamento', async ({ page }) => {

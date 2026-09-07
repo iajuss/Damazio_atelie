@@ -8,7 +8,7 @@ import { CustomizationInput } from './CustomizationInput';
 import { InquiryConfirmation } from './InquiryConfirmation';
 import { ReferenceUpload } from './ReferenceUpload';
 import { ErrorSummary } from '@/components/ui/ErrorSummary';
-import { INSTAGRAM_PROFILE_URL } from '@/lib/site';
+import { WHATSAPP_CONTACT_URL } from '@/lib/site';
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 type InquiryFormProps = { product?: CatalogProduct; requestKind?: InquiryKind; fetcher?: Fetcher };
@@ -101,7 +101,7 @@ export function InquiryForm({ product, requestKind = 'product', fetcher = fetch 
     <div className="inquiry-form__privacy"><div className="inquiry-form__privacy-copy"><input id="privacyAccepted" type="checkbox" name="privacyAccepted" aria-invalid={Boolean(errors.privacyAccepted)} aria-describedby={errors.privacyAccepted ? inputErrorId('privacyAccepted') : undefined} aria-labelledby="privacy-consent privacy-policy privacy-response" /><label id="privacy-consent" htmlFor="privacyAccepted">Li e aceito a </label><Link id="privacy-policy" href="/privacidade">política de privacidade</Link><span id="privacy-response"> para que a Damazio Atelier responda a esta solicitação.</span></div>{errors.privacyAccepted ? <p id={inputErrorId('privacyAccepted')} className="inquiry-field__error">{errors.privacyAccepted}</p> : null}</div>
     <div className="inquiry-form__actions">
       <button type="submit" className="button button--primary inquiry-form__submit" disabled={isSubmitting}>{isSubmitting ? 'Enviando solicitação…' : 'Enviar solicitação'}</button>
-      <a className="button button--secondary" href={INSTAGRAM_PROFILE_URL} target="_blank" rel="noreferrer">Continuar pelo Direct</a>
+      <a className="button button--secondary" href={WHATSAPP_CONTACT_URL} target="_blank" rel="noreferrer">Continuar pelo WhatsApp</a>
     </div>
   </form>;
 }

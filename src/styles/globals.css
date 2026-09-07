@@ -24,6 +24,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--color-clay); ou
 .skip-link:focus { transform: translateY(0); }
 .container { width: min(100% - 2rem, 72rem); margin-inline: auto; }
 .site-header { z-index: 10; width: 100%; transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease, backdrop-filter .35s ease; }
+.whatsapp-contact-bubble { position: fixed; z-index: 20; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); display: inline-flex; width: 3.25rem; height: 3.25rem; align-items: center; justify-content: center; border: 1px solid rgb(255 255 255 / .42); border-radius: 50%; background: #25d366; color: #fff; box-shadow: 0 .7rem 1.4rem rgb(21 93 48 / .34); transition: transform .2s ease, background-color .2s ease; }
+.whatsapp-contact-bubble:hover { background: #1eae56; transform: translateY(-.15rem); }
+.whatsapp-contact-bubble svg { width: 1.65rem; height: 1.65rem; }
 .site-header--overlay, .site-header--scrolled, .site-header--request { position: fixed; inset: 0 0 auto; }
 .site-header--standard, .site-header--footer-info { position: sticky; top: 0; }
 .site-header--standard { border-bottom: 1px solid rgb(205 187 165 / .72); background: rgb(251 248 243 / .9); backdrop-filter: blur(14px); }

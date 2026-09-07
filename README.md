@@ -41,7 +41,7 @@ pnpm playwright test src/test/e2e/home.spec.ts
 
 ## Operação e lançamento
 
-Os guias operacionais estão em [docs/operations](docs/operations): publicação do catálogo, atendimento pelo Instagram e checklist de lançamento. O catálogo é consultivo: não há preço público, pagamento, carrinho, checkout, conta de cliente ou prazo fixo.
+Os guias operacionais estão em [docs/operations](docs/operations): publicação do catálogo, atendimento pelo WhatsApp e checklist de lançamento. O catálogo é consultivo: não há preço público, pagamento, carrinho, checkout, conta de cliente ou prazo fixo.
 
 Para validar o conteúdo aprovado sem alterar dados remotos, informe um arquivo JSON local em `CATALOG_SEED_FILE` e execute:
 

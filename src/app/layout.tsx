@@ -3,6 +3,7 @@ import { Bodoni_Moda, DM_Sans } from 'next/font/google';
 import '@/styles/globals.css';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { SkipLink } from '@/components/ui/SkipLink';
+import { WhatsAppContactBubble } from '@/components/layout/WhatsAppContactBubble';
 
 const displayFont = Bodoni_Moda({
   subsets: ['latin'],
@@ -26,5 +27,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body className={`${displayFont.variable} ${bodyFont.variable}`}><SkipLink />{children}</body></html>;
+  return <html lang="pt-BR"><body className={`${displayFont.variable} ${bodyFont.variable}`}><SkipLink />{children}<WhatsAppContactBubble /></body></html>;
 }

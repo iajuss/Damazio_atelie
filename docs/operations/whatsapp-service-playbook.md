@@ -1,6 +1,6 @@
-# Playbook de atendimento pelo Instagram
+# Playbook de atendimento pelo WhatsApp
 
-O Instagram oficial da Damazio Atelier é [@damazio.atelier](https://www.instagram.com/damazio.atelier/). Ele é o destino único do handoff após uma solicitação. O atendimento é humano e consultivo: valores, viabilidade, prazo e frete são confirmados caso a caso no Direct.
+O WhatsApp oficial da Damazio Atelier é [(11) 91077-1179](https://wa.me/5511910771179). Ele é o destino único do handoff após uma solicitação. O atendimento é humano e consultivo: valores, viabilidade, prazo e frete são confirmados caso a caso pelo WhatsApp.
 
 ## Início de cada conversa
 
@@ -19,11 +19,11 @@ Não prometer resposta automática, prazo de resposta, disponibilidade futura ou
 
 O código identifica uma solicitação; ele não dá acesso público às referências. A consulta é feita somente no painel autorizado, por pessoa da operação com acesso individual. Não encaminhar anexos, contatos ou dados de outra pessoa. Ao encerrar o atendimento, deixar o status atualizado no painel (`nova`, `em análise`, `orçada`, `encerrada` ou `arquivada`).
 
-Se o código não for encontrado, pedir que a pessoa confira os caracteres ou envie os dados essenciais novamente no Direct. Nunca revelar se outra solicitação existe.
+Se o código não for encontrado, pedir que a pessoa confira os caracteres ou envie os dados essenciais novamente pelo WhatsApp. Nunca revelar se outra solicitação existe.
 
 ## Orçamento e ajustes
 
-Depois de confirmar viabilidade, preparar uma proposta com a peça, materiais, personalização, valor, condição de pagamento, prazo estimado e frete aplicável. Essas informações são tratadas no Direct, não no catálogo público.
+Depois de confirmar viabilidade, preparar uma proposta com a peça, materiais, personalização, valor, condição de pagamento, prazo estimado e frete aplicável. Essas informações são tratadas pelo WhatsApp, não no catálogo público.
 
 Mensagem sugerida:
 

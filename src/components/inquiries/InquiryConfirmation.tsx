@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore } from 'react';
 import type { InquiryResult } from '@/features/inquiries/types';
-import { buildInstagramProfileUrl } from '@/lib/instagram';
+import { buildWhatsAppContactUrl } from '@/lib/whatsapp';
 import { buildInquiryEmailUrl } from '@/lib/inquiry-email';
 
 type InquiryConfirmationProps = { result: InquiryResult };
@@ -37,7 +37,7 @@ export function InquiryConfirmation({ result }: InquiryConfirmationProps) {
     {!canCopy ? <p role="status">A cópia automática não está disponível neste navegador. Selecione o código acima para copiá-lo.</p> : null}
     {copyStatus === 'copied' ? <p role="status">Código copiado.</p> : null}
     {copyStatus === 'failed' ? <p role="status">Não foi possível copiar o código automaticamente. Selecione o código acima para copiá-lo.</p> : null}
-    <p>O orçamento, o prazo e o frete serão confirmados no Direct.</p>
-    <div className="inquiry-confirmation__actions"><a className="button button--primary" href={buildInstagramProfileUrl()} target="_blank" rel="noreferrer">Abrir Instagram</a><a className="button button--secondary" href={buildInquiryEmailUrl(result.requestCode)}>Enviar e-mail</a></div>
+    <p>O orçamento, o prazo e o frete serão confirmados pelo WhatsApp.</p>
+    <div className="inquiry-confirmation__actions"><a className="button button--primary" href={buildWhatsAppContactUrl()} target="_blank" rel="noreferrer">Abrir WhatsApp</a><a className="button button--secondary" href={buildInquiryEmailUrl(result.requestCode)}>Enviar e-mail</a></div>
   </section>;
 }

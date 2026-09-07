@@ -35,11 +35,11 @@ describe('ProductDetails', () => {
     expect(screen.queryByText(/R\$|preço|carrinho/i)).not.toBeInTheDocument();
   });
 
-  it('informa indisponibilidade e oferece Direct sem CTA de solicitação', () => {
+  it('informa indisponibilidade e oferece WhatsApp sem CTA de solicitação', () => {
     render(<ProductDetails product={{ ...product, availability: 'unavailable' }} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Esta peça não está disponível para solicitação no momento.');
-    expect(screen.getByRole('link', { name: 'Conversar pelo Direct' })).toHaveAttribute('href', expect.stringContaining('instagram.com'));
+    expect(screen.getByRole('link', { name: 'Conversar pelo WhatsApp' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
     expect(screen.queryByRole('link', { name: 'Solicitar orçamento' })).not.toBeInTheDocument();
   });
 });

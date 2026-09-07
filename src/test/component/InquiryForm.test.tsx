@@ -20,7 +20,7 @@ describe('InquiryForm', () => {
     render(<InquiryForm product={product} />);
 
     expect(screen.getByRole('link', { name: 'política de privacidade' })).toHaveAttribute('href', '/privacidade');
-    expect(screen.getByRole('link', { name: 'Continuar pelo Direct' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+    expect(screen.getByRole('link', { name: 'Continuar pelo WhatsApp' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
   });
 
   it('pede a ideia e envia uma criação livre sem inspiração', async () => {

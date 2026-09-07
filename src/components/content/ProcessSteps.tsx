@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 
-const steps = [['01', 'Escolha uma inspiração', 'Explore as linhas e encontre uma peça que converse com a sua ocasião.'], ['02', 'Conte sua ideia', 'Compartilhe os detalhes que tornam a criação única para você.'], ['03', 'Alinhe os detalhes no Direct', 'A Damazio conversa com você sobre viabilidade, orçamento, prazo e envio.']] as const;
+const steps = [['01', 'Escolha uma inspiração', 'Explore as linhas e encontre uma peça que converse com a sua ocasião.'], ['02', 'Conte sua ideia', 'Compartilhe os detalhes que tornam a criação única para você.'], ['03', 'Alinhe os detalhes pelo WhatsApp', 'A Damazio conversa com você sobre viabilidade, orçamento, prazo e envio.']] as const;
 
 export function ProcessSteps() {
   const [current, setCurrent] = useState(0);

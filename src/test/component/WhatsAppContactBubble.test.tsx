@@ -12,5 +12,6 @@ describe('WhatsAppContactBubble', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
     expect(link).toHaveClass('whatsapp-contact-bubble');
+    expect(link.querySelectorAll('svg path')).toHaveLength(1);
   });
 });

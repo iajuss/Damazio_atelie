@@ -18,6 +18,24 @@ test('o formulário mantém a experiência consultiva em viewport de 320px', asy
   await expect(page.getByText(/R\$|carrinho|checkout|pagamento/i)).toHaveCount(0);
 });
 
+test('a solicitação combina superfície clara com o header marrom', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/solicitar-orcamento/camisa-bordada');
+
+  await expect(page.getByRole('banner')).toHaveCSS('background-color', 'rgb(47, 42, 39)');
+  await expect(page.locator('.request-page-editorial')).toHaveCSS('background-color', 'rgb(251, 248, 243)');
+});
+
+test('a política de privacidade se destaca como link no consentimento', async ({ page }) => {
+  await page.goto('/solicitar-orcamento');
+
+  await expect(page.getByRole('link', { name: 'política de privacidade' })).toHaveCSS('color', 'rgb(121, 68, 49)');
+  const direct = page.getByRole('link', { name: 'Continuar pelo Direct' });
+  await expect(direct).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+  await expect(direct).toHaveAttribute('target', '_blank');
+  await expect(direct).toHaveAttribute('rel', 'noreferrer');
+});
+
 test('a confirmação em 320px mantém a CTA final do Instagram visível e utilizável', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.route('**/api/inquiries', async (route) => {

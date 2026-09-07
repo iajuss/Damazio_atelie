@@ -46,6 +46,34 @@ test('o catálogo apresenta somente as linhas e inclui a coleção de sousplats'
   await expect(page.getByRole('link', { name: 'Criar a sua peça' })).toHaveAttribute('href', '/solicitar-orcamento');
 });
 
+test('o catálogo organiza as seis escolhas em duas linhas e destaca a criação livre em dourado', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto('/catalogo');
+
+  const grid = page.locator('.line-grid');
+  await expect(grid.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).resolves.toBe(3);
+  await expect(page.locator('.custom-request-card')).toHaveCSS('background-color', 'rgb(114, 90, 29)');
+});
+
+test('o card de criação livre inteiro leva à solicitação e usa uma textura dourada', async ({ page }) => {
+  await page.goto('/catalogo');
+
+  const card = page.locator('.custom-request-card');
+  const link = card.getByRole('link', { name: 'Criar a sua peça' });
+  const [cardBox, linkBox] = await Promise.all([card.boundingBox(), link.boundingBox()]);
+  expect(linkBox).toEqual(cardBox);
+  await expect(card).toHaveCSS('background-image', /gradient/);
+  await expect(link).toHaveCSS('text-align', 'center');
+  await expect(card.getByRole('link')).toHaveCount(1);
+});
+
+test('a linha de presentes volta a oferecer um modelo clicável', async ({ page }) => {
+  await page.goto('/catalogo/presentes-e-embalagens');
+
+  await expect(page.getByRole('heading', { name: 'Presente embalado' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Solicitar seu presente embalado' })).toHaveAttribute('href', '/solicitar-orcamento/presente-embalado');
+});
+
 test('o catálogo aplica a jornada editorial em tela cheia e preserva a navegação por linhas', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('/catalogo');
@@ -106,7 +134,7 @@ test('o header funciona como atalho para as seções da home a partir de uma lin
   await expect(header.getByRole('link', { name: 'Sobre' })).toHaveAttribute('href', '/#sobre');
   await expect(header.getByRole('link', { name: 'Como funciona' })).toHaveAttribute('href', '/#como-funciona');
   await expect(header.locator('.header-catalog-link')).toHaveAttribute('href', '/catalogo');
-  await expect(header.getByRole('link', { name: 'Solicitar sua peça' })).toHaveAttribute('href', '/solicitar-orcamento');
+  await expect(header.getByRole('link', { name: 'Solicitar sua peça' })).toHaveCount(0);
 });
 
 test('a linha de sousplats e as novas camisetas têm galerias próprias', async ({ page }) => {

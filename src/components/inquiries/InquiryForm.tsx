@@ -1,12 +1,14 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import Link from 'next/link';
 import type { CatalogProduct } from '@/features/catalog/types';
 import type { InquiryKind, InquiryResult } from '@/features/inquiries/types';
 import { CustomizationInput } from './CustomizationInput';
 import { InquiryConfirmation } from './InquiryConfirmation';
 import { ReferenceUpload } from './ReferenceUpload';
 import { ErrorSummary } from '@/components/ui/ErrorSummary';
+import { INSTAGRAM_PROFILE_URL } from '@/lib/site';
 
 type Fetcher = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 type InquiryFormProps = { product?: CatalogProduct; requestKind?: InquiryKind; fetcher?: Fetcher };
@@ -96,7 +98,10 @@ export function InquiryForm({ product, requestKind = 'product', fetcher = fetch 
     <div className="inquiry-field"><label htmlFor="occasion">Ocasião ou momento especial <span className="reference-upload__optional">(opcional)</span></label><input id="occasion" name="occasion" type="text" {...fieldProps('occasion')} />{errors.occasion ? <p id={inputErrorId('occasion')} className="inquiry-field__error">{errors.occasion}</p> : null}</div>
     <div className="inquiry-field"><label htmlFor="description">{requestKind === 'custom' ? 'Conte a sua ideia *' : <>Conte um pouco mais sobre sua ideia <span className="reference-upload__optional">(opcional)</span></>}</label><textarea id="description" name="description" rows={5} required={requestKind === 'custom'} {...fieldProps('description')} />{errors.description ? <p id={inputErrorId('description')} className="inquiry-field__error">{errors.description}</p> : null}</div>
     <ReferenceUpload files={files} isUploading={isSubmitting} error={errors.attachments} onAdd={(selected) => setFiles((current) => [...current, ...selected].slice(0, 3))} onRemove={(index) => setFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))} />
-    <div className="inquiry-form__privacy"><label><input type="checkbox" name="privacyAccepted" aria-invalid={Boolean(errors.privacyAccepted)} aria-describedby={errors.privacyAccepted ? inputErrorId('privacyAccepted') : undefined} /> Li e aceito a política de privacidade para que a Damazio Atelier responda a esta solicitação.</label>{errors.privacyAccepted ? <p id={inputErrorId('privacyAccepted')} className="inquiry-field__error">{errors.privacyAccepted}</p> : null}</div>
-    <button type="submit" className="button button--primary inquiry-form__submit" disabled={isSubmitting}>{isSubmitting ? 'Enviando solicitação…' : 'Enviar solicitação'}</button>
+    <div className="inquiry-form__privacy"><div className="inquiry-form__privacy-copy"><input id="privacyAccepted" type="checkbox" name="privacyAccepted" aria-invalid={Boolean(errors.privacyAccepted)} aria-describedby={errors.privacyAccepted ? inputErrorId('privacyAccepted') : undefined} aria-labelledby="privacy-consent privacy-policy privacy-response" /><label id="privacy-consent" htmlFor="privacyAccepted">Li e aceito a </label><Link id="privacy-policy" href="/privacidade">política de privacidade</Link><span id="privacy-response"> para que a Damazio Atelier responda a esta solicitação.</span></div>{errors.privacyAccepted ? <p id={inputErrorId('privacyAccepted')} className="inquiry-field__error">{errors.privacyAccepted}</p> : null}</div>
+    <div className="inquiry-form__actions">
+      <button type="submit" className="button button--primary inquiry-form__submit" disabled={isSubmitting}>{isSubmitting ? 'Enviando solicitação…' : 'Enviar solicitação'}</button>
+      <a className="button button--secondary" href={INSTAGRAM_PROFILE_URL} target="_blank" rel="noreferrer">Continuar pelo Direct</a>
+    </div>
   </form>;
 }

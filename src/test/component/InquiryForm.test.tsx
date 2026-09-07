@@ -123,7 +123,7 @@ describe('InquiryForm', () => {
     const payload = fetcher.mock.calls[0][1].body as FormData;
     expect(payload.get('productSlug')).toBe('toalha-personalizada');
     expect(payload.get('privacyAccepted')).toBe('true');
-    expect(payload.get('answers')).toBe(JSON.stringify({ nome: 'Ana', cor: '' }));
+    expect(payload.get('answers')).toBe(JSON.stringify({ nome: 'Ana' }));
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
   });
 

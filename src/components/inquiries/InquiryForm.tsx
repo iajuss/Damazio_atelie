@@ -39,7 +39,7 @@ export function InquiryForm({ product, requestKind = 'product', fetcher = fetch 
     const submittedValues = {
       name: formText(formData, 'name'), contact: formText(formData, 'contact'), city: formText(formData, 'city'), state: formText(formData, 'state'),
       occasion: formText(formData, 'occasion'), description: formText(formData, 'description'), privacyAccepted: formData.has('privacyAccepted'),
-      answers: Object.fromEntries(fields.map((field) => [field.key, formText(formData, `answers.${field.key}`)])),
+      answers: Object.fromEntries(fields.map((field) => [field.key, formText(formData, `answers.${field.key}`)]).filter(([, value]) => value.trim().length > 0)),
     };
     const formFiles = formData.getAll('attachments').filter((item): item is File => item instanceof File && item.size > 0);
     const submittedFiles = formFiles.length > 0 ? formFiles : files;

@@ -16,6 +16,25 @@ function response(status: number, body: unknown): Response {
 }
 
 describe('InquiryForm', () => {
+  it('pede a ideia e envia uma criação livre sem inspiração', async () => {
+    const fetcher = vi.fn().mockResolvedValue(response(201, { requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }));
+    render(<InquiryForm requestKind="custom" fetcher={fetcher} />);
+    const idea = screen.getByRole('textbox', { name: /conte a sua ideia/i });
+    expect(idea).toBeRequired();
+    fireEvent.change(screen.getByRole('textbox', { name: /seu nome/i }), { target: { value: 'Ana' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /contato/i }), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /cidade/i }), { target: { value: 'São Paulo' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /estado/i }), { target: { value: 'SP' } });
+    fireEvent.change(idea, { target: { value: 'Uma bolsa para presentear.' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: /política de privacidade/i }));
+    fireEvent.submit(screen.getByRole('button', { name: 'Enviar solicitação' }).closest('form')!);
+    await screen.findByRole('heading', { name: 'Solicitação enviada' });
+    const payload = fetcher.mock.calls[0][1].body as FormData;
+    expect(payload.get('requestKind')).toBe('custom');
+    expect(payload.get('productSlug')).toBe('');
+    expect(payload.get('answers')).toBe('{}');
+  });
+
   it('renderiza campos de personalização específicos da peça e não pede endereço completo', () => {
     render(<InquiryForm product={product} />);
 
@@ -33,7 +52,7 @@ describe('InquiryForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'Enviar solicitação' }).closest('form')!);
 
     const summary = await screen.findByRole('alert');
-    expect(summary).toHaveFocus();
+    await waitFor(() => expect(summary).toHaveFocus());
     await waitFor(() => expect(screen.getByRole('textbox', { name: /seu nome/i })).toHaveAttribute('aria-describedby', expect.stringContaining('erro-name')));
     expect(screen.getByRole('textbox', { name: /nome a bordar/i })).toHaveAttribute('aria-describedby', expect.stringContaining('erro-answers-nome'));
     expect(screen.getAllByText('Informe seu nome.')).toHaveLength(2);

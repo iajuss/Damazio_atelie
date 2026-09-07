@@ -1,26 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { SITE_NAME } from '@/lib/site';
 import { Container } from '@/components/ui/Container';
 
 const navigation = [
-  { href: '/catalogo', label: 'Catálogo' },
-  { href: '/sobre', label: 'Sobre' },
-  { href: '/como-funciona', label: 'Como funciona' },
+  { href: '/#inicio', label: 'Home' },
+  { href: '/#sobre', label: 'Sobre' },
+  { href: '/#como-funciona', label: 'Como funciona' },
 ];
 
 export function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
+  const usesEditorialHero = pathname === '/' || pathname.startsWith('/catalogo') || pathname.startsWith('/solicitar-orcamento');
+
+  useEffect(() => {
+    const updateScrollState = () => setIsScrolled(window.scrollY > 24);
+    updateScrollState();
+    window.addEventListener('scroll', updateScrollState, { passive: true });
+    return () => window.removeEventListener('scroll', updateScrollState);
+  }, []);
+
+  const headerClassName = usesEditorialHero
+    ? isScrolled ? 'site-header site-header--scrolled' : 'site-header site-header--overlay'
+    : 'site-header site-header--standard';
 
   return (
-    <header className="site-header">
+    <header className={headerClassName}>
       <Container className="header-content">
-        <a className="brand" href="#conteudo" aria-label={`${SITE_NAME}, ir ao conteúdo`}>
-          <Image src="/damazio-logo.jpeg" alt="Logotipo Damazio Atelier" width={96} height={96} priority />
-          <span>{SITE_NAME}</span>
-        </a>
+        <Link className="brand" href="/#inicio" aria-label={`${SITE_NAME}, ir ao início`}>
+          <Image src="/damazio-logo-transparent.png" alt="Logotipo Damazio Atelier" width={128} height={128} priority />
+        </Link>
         <button
           className="menu-toggle"
           type="button"
@@ -37,7 +52,9 @@ export function SiteHeader() {
               {item.label}
             </a>
           ))}
+          <Link href="/solicitar-orcamento" onClick={() => setIsOpen(false)}>Solicitar sua peça</Link>
         </nav>
+        <div className="header-actions"><Link className="header-catalog-link" href="/catalogo">Ver catálogo</Link><Link className="header-request-link" href="/solicitar-orcamento">Solicitar sua peça</Link></div>
       </Container>
     </header>
   );

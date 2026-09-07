@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 export const SITE_NAME = 'Damazio Atelier';
 export const INSTAGRAM_PROFILE_URL = 'https://www.instagram.com/damazio.atelier/';
+export const INQUIRY_EMAIL_ADDRESS = 'damazioatelier@gmail.com';
 
 const FALLBACK_SITE_URL = 'http://localhost:3000';
 

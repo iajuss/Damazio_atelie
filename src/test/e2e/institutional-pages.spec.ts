@@ -5,7 +5,7 @@ const institutionalPages = [
   ['/como-funciona', /personalização feita em conversa/i],
   ['/envio-nacional', /envio para todo o brasil/i],
   ['/perguntas-frequentes', /perguntas frequentes/i],
-  ['/contato', /contato pelo instagram/i],
+  ['/contato', /fale com a damazio/i],
 ] as const;
 
 for (const [path, heading] of institutionalPages) {
@@ -18,12 +18,15 @@ for (const [path, heading] of institutionalPages) {
   });
 }
 
-test('a home apresenta as quatro linhas e a mensagem de envio nacional', async ({ page }) => {
+test('a home apresenta as cinco linhas e FAQ sobre o envio nacional', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('.line-card')).toHaveCount(4);
-  await expect(page.getByText('Envio para todo o Brasil')).toBeVisible();
-  await expect(page.getByText(/frete e prazo são alinhados caso a caso no Direct/i)).toBeVisible();
+  await expect(page.locator('.line-card')).toHaveCount(5);
+  const faq = page.getByRole('region', { name: 'Perguntas frequentes' });
+  const shippingQuestion = faq.getByText('Vocês enviam para todo o Brasil?');
+  await expect(shippingQuestion).toBeVisible();
+  await shippingQuestion.click();
+  await expect(faq.getByText(/envio é combinado caso a caso/i)).toBeVisible();
   await expect(page.getByRole('link', { name: 'Conheça o catálogo' })).toBeVisible();
 });
 
@@ -31,6 +34,12 @@ test('a rota de entrega orienta a continuação no Direct oficial', async ({ pag
   await page.goto('/envio-nacional');
 
   await expect(page.getByRole('link', { name: 'Continuar no Direct' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
+});
+
+test('o contato oferece e-mail e Instagram', async ({ page }) => {
+  await page.goto('/contato');
+  await expect(page.getByRole('link', { name: 'Enviar e-mail para a Damazio' })).toHaveAttribute('href', 'mailto:damazioatelier@gmail.com');
+  await expect(page.getByRole('link', { name: 'Abrir Instagram da Damazio' })).toHaveAttribute('href', 'https://www.instagram.com/damazio.atelier/');
 });
 
 test('o CTA do catálogo permanece visível em celular sem overflow horizontal', async ({ page }) => {

@@ -30,12 +30,13 @@ export function CepAddressFields({ fetcher = fetch, errors, fieldProps, inputErr
   const [values, setValues] = useState<AddressValues>(initialValues);
   const [lookupError, setLookupError] = useState('');
   const lastLookup = useRef('');
+  const postalCodeRevision = useRef(0);
 
   function changeField(name: AddressKey, value: string) {
     setValues((current) => ({ ...current, [name]: name === 'postalCode' ? formatCep(value) : value }));
   }
 
-  async function lookup(postalCode: string) {
+  async function lookup(postalCode: string, revision: number) {
     if (postalCode.length !== 8 || postalCode === lastLookup.current) return;
     lastLookup.current = postalCode;
     setLookupError('');
@@ -43,7 +44,7 @@ export function CepAddressFields({ fetcher = fetch, errors, fieldProps, inputErr
       const response = await fetcher(`/api/cep/${postalCode}`);
       if (!response.ok) throw new Error('CEP lookup failed');
       const address = await response.json() as Partial<Pick<AddressValues, 'street' | 'neighborhood' | 'city' | 'state'>>;
-      if (lastLookup.current !== postalCode) return;
+      if (postalCodeRevision.current !== revision) return;
       setValues((current) => ({
         ...current,
         street: address.street || current.street,
@@ -52,7 +53,7 @@ export function CepAddressFields({ fetcher = fetch, errors, fieldProps, inputErr
         state: address.state || current.state,
       }));
     } catch {
-      if (lastLookup.current === postalCode) setLookupError('Não foi possível localizar o CEP agora. Preencha o endereço manualmente.');
+      if (postalCodeRevision.current === revision) setLookupError('Não foi possível localizar o CEP agora. Preencha o endereço manualmente.');
     }
   }
 
@@ -64,7 +65,10 @@ export function CepAddressFields({ fetcher = fetch, errors, fieldProps, inputErr
       <input id={id} name={name} type={options.type ?? 'text'} value={values[name]} onChange={(event) => {
         const value = event.target.value;
         changeField(name, value);
-        if (name === 'postalCode') void lookup(digits(value));
+        if (name === 'postalCode') {
+          postalCodeRevision.current += 1;
+          void lookup(digits(value), postalCodeRevision.current);
+        }
       }} inputMode={options.inputMode} maxLength={options.maxLength} autoComplete={options.autoComplete} required={!options.optional} {...fieldProps(name)} />
       {error ? <p id={inputErrorId(name)} className="inquiry-field__error">{error}</p> : null}
     </div>;

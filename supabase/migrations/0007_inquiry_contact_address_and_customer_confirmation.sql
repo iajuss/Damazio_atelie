@@ -55,10 +55,15 @@ begin
     raise exception 'invalid inquiry payload';
   end if;
 
-  if p_customer_notification_payload ?| array[
-    'contact', 'phone', 'postalCode', 'street', 'addressNumber', 'complement', 'neighborhood',
-    'city', 'state', 'occasion', 'description', 'answers', 'attachments'
-  ] or not (p_customer_notification_payload ?& array['requestCode', 'name', 'email']) then
+  if p_contact is null or p_email is null or p_contact <> p_email then
+    raise exception 'legacy contact must equal email';
+  end if;
+
+  if p_customer_notification_payload <> jsonb_build_object(
+    'requestCode', p_request_code,
+    'name', p_name,
+    'email', p_email
+  ) then
     raise exception 'invalid customer notification payload';
   end if;
 

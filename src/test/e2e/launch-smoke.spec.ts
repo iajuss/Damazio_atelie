@@ -23,10 +23,18 @@ function requiredProductSlug(): string {
 }
 
 async function fillRequiredFields(page: import('@playwright/test').Page) {
+  await page.route('**/api/cep/**', async (route) => {
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ street: 'Praça da Sé', neighborhood: 'Sé', city: 'São Paulo', state: 'SP' }) });
+  });
   await page.getByRole('textbox', { name: /seu nome/i }).fill('Ensaio operacional Damazio');
-  await page.getByRole('textbox', { name: /contato/i }).fill('operacao@example.invalid');
-  await page.getByRole('textbox', { name: /cidade/i }).fill('São Paulo');
-  await page.getByRole('textbox', { name: /estado/i }).fill('SP');
+  await page.getByRole('textbox', { name: /e-mail/i }).fill('operacao@example.invalid');
+  await page.getByRole('textbox', { name: /telefone/i }).fill('11910771179');
+  await page.getByRole('textbox', { name: /^cep/i }).fill('01001-000');
+  await expect(page.getByRole('textbox', { name: /rua ou logradouro/i })).toHaveValue('Praça da Sé');
+  await page.getByRole('textbox', { name: /^número/i }).fill('1');
+  await expect(page.getByRole('textbox', { name: /bairro/i })).toHaveValue('Sé');
+  await expect(page.getByRole('textbox', { name: /cidade/i })).toHaveValue('São Paulo');
+  await expect(page.getByRole('textbox', { name: /estado/i })).toHaveValue('SP');
   await page.getByRole('checkbox', { name: /política de privacidade/i }).check();
 
   const customizationFields = page.locator('[name^="answers."][required]');

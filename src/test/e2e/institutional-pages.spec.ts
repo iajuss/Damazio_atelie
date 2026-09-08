@@ -49,12 +49,15 @@ test('o contato oferece e-mail e WhatsApp', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Abrir WhatsApp da Damazio' })).toHaveAttribute('href', 'https://wa.me/5511910771179');
 });
 
-test('a política explica a notificação operacional pelo Gmail', async ({ page }) => {
+test('a política explica o recibo com protocolo e preserva referências privadas', async ({ page }) => {
   await page.goto('/privacidade');
 
   await expect(page.getByText(/podem ser transmitidos ao Gmail somente/i)).toBeVisible();
   await expect(page.getByText(/pelo endereço damazioatelier@gmail\.com/i)).toBeVisible();
   await expect(page.getByText(/referências visuais.*não são anexadas/i)).toBeVisible();
+  await expect(page.getByText(/nome, e-mail, telefone, endereço completo de entrega/i)).toBeVisible();
+  await expect(page.getByText(/recibo com o protocolo.*e-mail informado/i)).toBeVisible();
+  await expect(page.getByText(/não são publicadas nem anexadas aos e-mails/i)).toBeVisible();
 });
 
 test('o CTA do catálogo permanece visível em celular sem overflow horizontal', async ({ page }) => {

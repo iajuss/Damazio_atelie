@@ -7,6 +7,7 @@ import type { InquiryKind, InquiryResult } from '@/features/inquiries/types';
 import { CustomizationInput } from './CustomizationInput';
 import { InquiryConfirmation } from './InquiryConfirmation';
 import { ReferenceUpload } from './ReferenceUpload';
+import { CepAddressFields } from './CepAddressFields';
 import { ErrorSummary } from '@/components/ui/ErrorSummary';
 import { WHATSAPP_CONTACT_URL } from '@/lib/site';
 
@@ -28,7 +29,7 @@ export function InquiryForm({ product, requestKind = 'product', fetcher = fetch 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fields = [...(product?.customizationFields ?? [])].sort((a, b) => a.sortOrder - b.sortOrder);
 
-  function fieldProps(name: 'name' | 'contact' | 'city' | 'state' | 'occasion' | 'description') {
+  function fieldProps(name: string) {
     const error = errors[name];
     return { 'aria-invalid': Boolean(error), 'aria-describedby': error ? inputErrorId(name) : undefined };
   }
@@ -37,7 +38,7 @@ export function InquiryForm({ product, requestKind = 'product', fetcher = fetch 
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const submittedValues = {
-      name: formText(formData, 'name'), contact: formText(formData, 'contact'), city: formText(formData, 'city'), state: formText(formData, 'state'),
+      name: formText(formData, 'name'), email: formText(formData, 'email'), phone: formText(formData, 'phone'), postalCode: formText(formData, 'postalCode'), street: formText(formData, 'street'), addressNumber: formText(formData, 'addressNumber'), complement: formText(formData, 'complement'), neighborhood: formText(formData, 'neighborhood'), city: formText(formData, 'city'), state: formText(formData, 'state'),
       occasion: formText(formData, 'occasion'), description: formText(formData, 'description'), privacyAccepted: formData.has('privacyAccepted'),
       answers: Object.fromEntries(fields.map((field) => [field.key, formText(formData, `answers.${field.key}`)]).filter(([, value]) => value.trim().length > 0)),
     };
@@ -55,7 +56,13 @@ export function InquiryForm({ product, requestKind = 'product', fetcher = fetch 
     data.set('requestKind', requestKind);
     data.set('productSlug', product?.slug ?? '');
     data.set('name', submittedValues.name);
-    data.set('contact', submittedValues.contact);
+    data.set('email', submittedValues.email);
+    data.set('phone', submittedValues.phone);
+    data.set('postalCode', submittedValues.postalCode);
+    data.set('street', submittedValues.street);
+    data.set('addressNumber', submittedValues.addressNumber);
+    data.set('complement', submittedValues.complement);
+    data.set('neighborhood', submittedValues.neighborhood);
     data.set('city', submittedValues.city);
     data.set('state', submittedValues.state);
     data.set('occasion', submittedValues.occasion);
@@ -90,10 +97,10 @@ export function InquiryForm({ product, requestKind = 'product', fetcher = fetch 
     {summaryMessages.length > 0 ? <ErrorSummary messages={summaryMessages} /> : null}
     <div className="inquiry-form__grid">
       <div className="inquiry-field"><label htmlFor="name">Seu nome *</label><input id="name" name="name" type="text" {...fieldProps('name')} />{errors.name ? <p id={inputErrorId('name')} className="inquiry-field__error">{errors.name}</p> : null}</div>
-      <div className="inquiry-field"><label htmlFor="contact">Contato *</label><input id="contact" name="contact" type="text" autoComplete="email" {...fieldProps('contact')} />{errors.contact ? <p id={inputErrorId('contact')} className="inquiry-field__error">{errors.contact}</p> : null}</div>
-      <div className="inquiry-field"><label htmlFor="city">Cidade *</label><input id="city" name="city" type="text" {...fieldProps('city')} />{errors.city ? <p id={inputErrorId('city')} className="inquiry-field__error">{errors.city}</p> : null}</div>
-      <div className="inquiry-field"><label htmlFor="state">Estado (UF) *</label><input id="state" name="state" type="text" inputMode="text" maxLength={2} {...fieldProps('state')} />{errors.state ? <p id={inputErrorId('state')} className="inquiry-field__error">{errors.state}</p> : null}</div>
+      <div className="inquiry-field"><label htmlFor="email">E-mail *</label><input id="email" name="email" type="email" autoComplete="email" required {...fieldProps('email')} />{errors.email ? <p id={inputErrorId('email')} className="inquiry-field__error">{errors.email}</p> : null}</div>
+      <div className="inquiry-field"><label htmlFor="phone">Telefone *</label><input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" required {...fieldProps('phone')} />{errors.phone ? <p id={inputErrorId('phone')} className="inquiry-field__error">{errors.phone}</p> : null}</div>
     </div>
+    <CepAddressFields fetcher={fetcher} errors={errors} fieldProps={fieldProps} inputErrorId={inputErrorId} />
     {fields.length > 0 ? <fieldset className="inquiry-form__customization"><legend>Personalize sua peça</legend>{fields.map((field) => <CustomizationInput key={field.key} field={field} error={errors[`answers.${field.key}`]} />)}</fieldset> : null}
     <div className="inquiry-field"><label htmlFor="occasion">Ocasião ou momento especial <span className="reference-upload__optional">(opcional)</span></label><input id="occasion" name="occasion" type="text" {...fieldProps('occasion')} />{errors.occasion ? <p id={inputErrorId('occasion')} className="inquiry-field__error">{errors.occasion}</p> : null}</div>
     <div className="inquiry-field"><label htmlFor="description">{requestKind === 'custom' ? 'Conte a sua ideia *' : <>Conte um pouco mais sobre sua ideia <span className="reference-upload__optional">(opcional)</span></>}</label><textarea id="description" name="description" rows={5} required={requestKind === 'custom'} {...fieldProps('description')} />{errors.description ? <p id={inputErrorId('description')} className="inquiry-field__error">{errors.description}</p> : null}</div>

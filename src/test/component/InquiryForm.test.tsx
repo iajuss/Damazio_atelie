@@ -15,7 +15,50 @@ function response(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 }
 
+function fillContactAndAddress() {
+  fireEvent.change(screen.getByRole('textbox', { name: /e-mail/i }), { target: { value: 'ana@example.com' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /telefone/i }), { target: { value: '11910771179' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /cep/i }), { target: { value: '01001' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /rua|logradouro/i }), { target: { value: 'Praça da Sé' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /número/i }), { target: { value: '1' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /bairro/i }), { target: { value: 'Sé' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /cidade/i }), { target: { value: 'São Paulo' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /estado/i }), { target: { value: 'SP' } });
+}
+
 describe('InquiryForm', () => {
+  it('separa telefone e e-mail, preenche o endereço pelo CEP e mantém os campos editáveis', async () => {
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input) === '/api/cep/01001000') return response(200, { street: 'Praça da Sé', neighborhood: 'Sé', city: 'São Paulo', state: 'SP' });
+      return response(201, { requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
+    });
+    render(<InquiryForm requestKind="custom" fetcher={fetcher} />);
+
+    expect(screen.queryByRole('textbox', { name: /^contato/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /e-mail/i })).toBeRequired();
+    expect(screen.getByRole('textbox', { name: /telefone/i })).toBeRequired();
+    fireEvent.change(screen.getByRole('textbox', { name: /cep/i }), { target: { value: '01001-000' } });
+
+    await waitFor(() => expect(screen.getByRole('textbox', { name: /rua|logradouro/i })).toHaveValue('Praça da Sé'));
+    expect(screen.getByRole('textbox', { name: /bairro/i })).toHaveValue('Sé');
+    expect(screen.getByRole('textbox', { name: /cidade/i })).toHaveValue('São Paulo');
+    expect(screen.getByRole('textbox', { name: /estado/i })).toHaveValue('SP');
+    fireEvent.change(screen.getByRole('textbox', { name: /cidade/i }), { target: { value: 'Santo André' } });
+    expect(screen.getByRole('textbox', { name: /cidade/i })).toHaveValue('Santo André');
+  });
+
+  it('permite preencher o endereço manualmente quando a busca do CEP falha', async () => {
+    const fetcher = vi.fn().mockResolvedValue(response(502, { error: { message: 'Indisponível' } }));
+    render(<InquiryForm requestKind="custom" fetcher={fetcher} />);
+    const street = screen.getByRole('textbox', { name: /rua|logradouro/i });
+    fireEvent.change(street, { target: { value: 'Rua Manual' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /cep/i }), { target: { value: '01001-000' } });
+
+    expect(await screen.findByText(/preencha o endereço manualmente/i)).toBeInTheDocument();
+    expect(street).toHaveValue('Rua Manual');
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it('leva a pessoa à política antes de consentir com o envio', () => {
     render(<InquiryForm product={product} />);
 
@@ -29,9 +72,7 @@ describe('InquiryForm', () => {
     const idea = screen.getByRole('textbox', { name: /conte a sua ideia/i });
     expect(idea).toBeRequired();
     fireEvent.change(screen.getByRole('textbox', { name: /seu nome/i }), { target: { value: 'Ana' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /contato/i }), { target: { value: 'ana@example.com' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /cidade/i }), { target: { value: 'São Paulo' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /estado/i }), { target: { value: 'SP' } });
+    fillContactAndAddress();
     fireEvent.change(idea, { target: { value: 'Uma bolsa para presentear.' } });
     fireEvent.click(screen.getByRole('checkbox', { name: /política de privacidade/i }));
     fireEvent.submit(screen.getByRole('button', { name: 'Enviar solicitação' }).closest('form')!);
@@ -42,13 +83,15 @@ describe('InquiryForm', () => {
     expect(payload.get('answers')).toBe('{}');
   });
 
-  it('renderiza campos de personalização específicos da peça e não pede endereço completo', () => {
+  it('renderiza campos de personalização específicos da peça e pede endereço completo', () => {
     render(<InquiryForm product={product} />);
 
     expect(screen.getByRole('textbox', { name: /nome a bordar/i })).toBeRequired();
     expect(screen.getByRole('combobox', { name: /cor da linha/i })).toBeInTheDocument();
     expect(screen.getByText('Escreva como deseja ver o nome.')).toBeInTheDocument();
-    expect(screen.queryByLabelText(/endereço|rua|número|cep/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /endereço para entrega/i })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /cep/i })).toBeRequired();
+    expect(screen.getByRole('textbox', { name: /rua|logradouro/i })).toBeRequired();
   });
 
   it('associa os erros recebidos aos campos e move o foco ao resumo', async () => {
@@ -112,9 +155,7 @@ describe('InquiryForm', () => {
     const fetcher = vi.fn().mockResolvedValue(response(201, { requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }));
     render(<InquiryForm product={product} fetcher={fetcher} />);
     fireEvent.change(screen.getByRole('textbox', { name: /seu nome/i }), { target: { value: 'Ana' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /contato/i }), { target: { value: 'ana@example.com' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /cidade/i }), { target: { value: 'São Paulo' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /estado/i }), { target: { value: 'SP' } });
+    fillContactAndAddress();
     fireEvent.change(screen.getByRole('textbox', { name: /nome a bordar/i }), { target: { value: 'Ana' } });
     fireEvent.click(screen.getByRole('checkbox', { name: /política de privacidade/i }));
     fireEvent.submit(screen.getByRole('button', { name: 'Enviar solicitação' }).closest('form')!);
@@ -123,6 +164,10 @@ describe('InquiryForm', () => {
     const payload = fetcher.mock.calls[0][1].body as FormData;
     expect(payload.get('productSlug')).toBe('toalha-personalizada');
     expect(payload.get('privacyAccepted')).toBe('true');
+    expect(payload.get('email')).toBe('ana@example.com');
+    expect(payload.get('phone')).toBe('11910771179');
+    expect(payload.get('postalCode')).toBe('01001');
+    expect(payload.get('contact')).toBeNull();
     expect(payload.get('answers')).toBe(JSON.stringify({ nome: 'Ana' }));
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
   });
@@ -132,9 +177,7 @@ describe('InquiryForm', () => {
     const fetcher = vi.fn().mockReturnValue(new Promise<Response>((resolve) => { resolveResponse = resolve; }));
     render(<InquiryForm product={product} fetcher={fetcher} />);
     fireEvent.change(screen.getByRole('textbox', { name: /seu nome/i }), { target: { value: 'Ana' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /contato/i }), { target: { value: 'ana@example.com' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /cidade/i }), { target: { value: 'São Paulo' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /estado/i }), { target: { value: 'SP' } });
+    fillContactAndAddress();
     fireEvent.click(screen.getByRole('checkbox', { name: /política de privacidade/i }));
     fireEvent.change(screen.getByLabelText(/adicionar referências/i), { target: { files: [new File(['imagem'], 'referencia.png', { type: 'image/png' })] } });
     fireEvent.submit(screen.getByRole('button', { name: 'Enviar solicitação' }).closest('form')!);

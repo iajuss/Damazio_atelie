@@ -2,12 +2,19 @@ import 'server-only';
 
 import nodemailer from 'nodemailer';
 
-export type LeadNotificationPayload = {
+export type AtelierNotificationPayload = {
   requestCode: string;
   requestKind: 'product' | 'custom';
   productName: string | null;
   name: string;
   contact: string;
+  email: string;
+  phone: string;
+  postalCode: string;
+  street: string;
+  addressNumber: string;
+  complement: string;
+  neighborhood: string;
   city: string;
   state: string;
   occasion: string | null;
@@ -15,6 +22,16 @@ export type LeadNotificationPayload = {
   answers: Record<string, string>;
   attachments: Array<{ filename: string; mimeType: string; byteSize: number }>;
 };
+
+export type CustomerNotificationPayload = {
+  requestCode: string;
+  name: string;
+  email: string;
+};
+
+export type QueuedLeadNotification =
+  | { recipientKind: 'atelier'; payload: AtelierNotificationPayload }
+  | { recipientKind: 'customer'; payload: CustomerNotificationPayload };
 
 export type LeadEmailConfig = {
   smtpUser: string;
@@ -47,13 +64,36 @@ function answerLines(answers: Record<string, string>): string[] {
   return entries.length > 0 ? entries.map(([key, value]) => `- ${key}: ${value}`) : ['- Nenhuma resposta adicional.'];
 }
 
-function attachmentLines(attachments: LeadNotificationPayload['attachments']): string[] {
+function attachmentLines(attachments: AtelierNotificationPayload['attachments']): string[] {
   return attachments.length > 0
     ? attachments.map(({ filename, mimeType, byteSize }) => `- ${filename} (${mimeType}, ${byteSize} bytes)`)
     : ['- Nenhuma referência visual.'];
 }
 
-export function buildLeadEmail(payload: LeadNotificationPayload, config: LeadEmailConfig = getLeadEmailConfig()) {
+function fullAddress(payload: AtelierNotificationPayload): string {
+  return `${payload.street}, ${payload.addressNumber}${payload.complement ? ` - ${payload.complement}` : ''}`;
+}
+
+export function buildLeadEmail(notification: QueuedLeadNotification, config: LeadEmailConfig = getLeadEmailConfig()) {
+  if (notification.recipientKind === 'customer') {
+    const { payload } = notification;
+    return {
+      from: config.from,
+      to: payload.email,
+      subject: `[Damazio] Recebemos sua solicitação ${payload.requestCode}`,
+      text: [
+        `Olá, ${payload.name}.`,
+        '',
+        'Recebemos sua solicitação e retornaremos assim que possível.',
+        `Protocolo: ${payload.requestCode}`,
+        '',
+        'Com carinho,',
+        'Damazio Atelier',
+      ].join('\n'),
+    };
+  }
+
+  const { payload } = notification;
   const context = payload.requestKind === 'product'
     ? `Produto: ${payload.productName ?? 'Produto não identificado'}`
     : 'Criação livre: a pessoa quer criar uma peça a partir da própria ideia.';
@@ -62,7 +102,11 @@ export function buildLeadEmail(payload: LeadNotificationPayload, config: LeadEma
     '',
     context,
     `Nome: ${payload.name}`,
-    `Contato: ${payload.contact}`,
+    `E-mail: ${payload.email}`,
+    `Telefone: ${payload.phone}`,
+    `CEP: ${payload.postalCode}`,
+    `Endereço: ${fullAddress(payload)}`,
+    `Bairro: ${payload.neighborhood}`,
     `Cidade/UF: ${payload.city}/${payload.state}`,
     `Ocasião: ${payload.occasion ?? 'Não informada'}`,
     '',
@@ -81,11 +125,11 @@ export function buildLeadEmail(payload: LeadNotificationPayload, config: LeadEma
     to: config.to,
     subject: `[Damazio] Nova solicitação ${payload.requestCode}`,
     text,
-    ...(emailPattern.test(payload.contact) ? { replyTo: payload.contact } : {}),
+    ...(emailPattern.test(payload.email) ? { replyTo: payload.email } : {}),
   };
 }
 
-export async function sendLeadEmail(payload: LeadNotificationPayload, config: LeadEmailConfig = getLeadEmailConfig()): Promise<void> {
+export async function sendLeadEmail(notification: QueuedLeadNotification, config: LeadEmailConfig = getLeadEmailConfig()): Promise<void> {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
@@ -93,5 +137,5 @@ export async function sendLeadEmail(payload: LeadNotificationPayload, config: Le
     auth: { user: config.smtpUser, pass: config.smtpAppPassword },
   });
 
-  await transporter.sendMail(buildLeadEmail(payload, config));
+  await transporter.sendMail(buildLeadEmail(notification, config));
 }

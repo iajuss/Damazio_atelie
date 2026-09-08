@@ -4,14 +4,14 @@ import type { CatalogProduct } from '@/features/catalog/types';
 
 const product: CatalogProduct = { id: 'product-1', lineSlug: 'enxovais', slug: 'toalha-bordada', name: 'Toalha bordada', description: null, materials: [], availability: 'available', media: [], customizationFields: [] };
 
-function request(overrides: Record<string, string> = {}) {
+function request(overrides: Record<string, string> = {}, headers: Record<string, string> = {}) {
   const data = new FormData();
   for (const [key, value] of Object.entries({
     productSlug: 'toalha-bordada', name: 'Ana', contact: 'forjado@example.com', email: 'ana@example.com', phone: '11999999999',
     postalCode: '01001000', street: 'Praça da Sé', addressNumber: '1', complement: '', neighborhood: 'Sé', city: 'São Paulo', state: 'SP', description: 'Uma peça especial', privacyAccepted: 'true',
     ...overrides,
   })) data.set(key, value);
-  return new Request('https://damazio.example/api/inquiries', { method: 'POST', headers: { origin: 'https://damazio.example' }, body: data });
+  return new Request('https://damazio.example/api/inquiries', { method: 'POST', headers: { origin: 'https://damazio.example', ...headers }, body: data });
 }
 
 describe('notificação imediata da solicitação', () => {
@@ -62,7 +62,25 @@ describe('notificação imediata da solicitação', () => {
     });
   });
 
-  it('registra a etapa técnica quando falha antes de persistir o lead', async () => {
+  it('rejeita conteúdo que não seja multipart antes de analisar o corpo', async () => {
+    const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true });
+
+    const response = await post(new Request('https://damazio.example/api/inquiries', {
+      method: 'POST', headers: { origin: 'https://damazio.example', 'content-type': 'application/json' }, body: '{}',
+    }));
+
+    expect(response.status).toBe(415);
+  });
+
+  it('rejeita o corpo declarado acima do orçamento total de anexos antes de analisá-lo', async () => {
+    const post = createInquiryPostHandler({ expectedOrigin: 'https://damazio.example', rateLimit: () => true });
+
+    const response = await post(request({}, { 'content-length': String(16 * 1024 * 1024 + 1) }));
+
+    expect(response.status).toBe(413);
+  });
+
+  it('registra somente a etapa técnica quando falha antes de persistir o lead', async () => {
     const report = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const post = createInquiryPostHandler({
       expectedOrigin: 'https://damazio.example',
@@ -76,8 +94,6 @@ describe('notificação imediata da solicitação', () => {
       expect(response.status).toBe(500);
       expect(report).toHaveBeenCalledWith('inquiry_submission_failed', {
         stage: 'load_product',
-        name: 'Error',
-        message: 'Variável de ambiente obrigatória ausente: SUPABASE_SERVICE_ROLE_KEY',
       });
     } finally {
       report.mockRestore();

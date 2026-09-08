@@ -17,7 +17,7 @@
     "seed:catalog": "tsx scripts/seed-catalog.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.47.10",
+    "@supabase/supabase-js": "2.109.0",
     "next": "16.3.4",
     "nodemailer": "^10.0.0",
     "react": "19.2.8",

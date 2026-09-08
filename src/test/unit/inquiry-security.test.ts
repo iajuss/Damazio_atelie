@@ -16,6 +16,14 @@ describe('fronteiras de segurança da solicitação', () => {
     expect(requestClientKey(request, true)).toBe('203.0.113.10');
   });
 
+  it('prioriza o IP canônico da Vercel quando o proxy foi explicitamente confiado', () => {
+    const request = new Request('https://damazio.example/api/inquiries', {
+      headers: { 'x-vercel-forwarded-for': '203.0.113.10', 'x-forwarded-for': '198.51.100.4' },
+    });
+
+    expect(requestClientKey(request, true)).toBe('203.0.113.10');
+  });
+
   it('limpa chaves expiradas e bloqueia novas chaves ao atingir o teto local', () => {
     const allow = createRateLimiter({ limit: 2, windowMs: 60_000, maxEntries: 1 });
     expect(allow('primeira', 0)).toBe(true);

@@ -31,6 +31,7 @@ export function InquiryConfirmation({ result }: InquiryConfirmationProps) {
     <p className="eyebrow">Próximo passo</p>
     <h1 id="solicitacao-enviada">Solicitação enviada</h1>
     <p>{result.message}</p>
+    <p>Enviamos uma confirmação para o seu e-mail. Caso não a encontre em alguns minutos, confira também a caixa de spam.</p>
     <p>Guarde este código para identificar sua conversa:</p>
     <p className="inquiry-confirmation__code" aria-label="Código da solicitação">{result.requestCode}</p>
     <button type="button" className="button button--secondary" onClick={copyCode} disabled={!canCopy}>Copiar código</button>

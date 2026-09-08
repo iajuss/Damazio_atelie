@@ -7,6 +7,8 @@ describe('InquiryConfirmation', () => {
     render(<InquiryConfirmation result={{ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }} />);
 
     expect(screen.getByText('AB12CD34EF56GH78IJ90')).toBeInTheDocument();
+    expect(screen.getByText(/enviamos uma confirmação para o seu e-mail/i)).toBeInTheDocument();
+    expect(screen.getByText(/confira também a caixa de spam/i)).toBeInTheDocument();
     expect(screen.getByText(/o orçamento, o prazo e o frete serão confirmados pelo WhatsApp/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveAttribute('href', WHATSAPP_CONTACT_URL);
     expect(screen.getByRole('link', { name: 'Enviar e-mail' })).toHaveAttribute('href', expect.stringContaining('mailto:damazioatelier@gmail.com?subject=Solicita%C3%A7%C3%A3o+AB12CD34EF56GH78IJ90'));

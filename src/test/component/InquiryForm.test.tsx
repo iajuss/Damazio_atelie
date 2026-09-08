@@ -76,6 +76,23 @@ describe('InquiryForm', () => {
     expect(screen.getByRole('textbox', { name: /cidade/i })).toHaveValue('');
   });
 
+  it('consulta novamente um CEP completo após uma edição intermediária', async () => {
+    const resolvers: Array<(value: Response) => void> = [];
+    const fetcher = vi.fn().mockImplementation(() => new Promise<Response>((resolve) => { resolvers.push(resolve); }));
+    render(<InquiryForm requestKind="custom" fetcher={fetcher} />);
+    const cep = screen.getByRole('textbox', { name: /cep/i });
+
+    fireEvent.change(cep, { target: { value: '01001-000' } });
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    fireEvent.change(cep, { target: { value: '01001' } });
+    fireEvent.change(cep, { target: { value: '01001-000' } });
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+
+    resolvers[0](response(200, { street: 'Endereço antigo', neighborhood: 'Antigo', city: 'Antiga', state: 'SP' }));
+    resolvers[1](response(200, { street: 'Praça da Sé', neighborhood: 'Sé', city: 'São Paulo', state: 'SP' }));
+    await waitFor(() => expect(screen.getByRole('textbox', { name: /rua|logradouro/i })).toHaveValue('Praça da Sé'));
+  });
+
   it('leva a pessoa à política antes de consentir com o envio', () => {
     render(<InquiryForm product={product} />);
 

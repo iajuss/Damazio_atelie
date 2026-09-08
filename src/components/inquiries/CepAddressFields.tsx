@@ -29,7 +29,6 @@ function formatCep(value: string): string {
 export function CepAddressFields({ fetcher = fetch, errors, fieldProps, inputErrorId }: CepAddressFieldsProps) {
   const [values, setValues] = useState<AddressValues>(initialValues);
   const [lookupError, setLookupError] = useState('');
-  const lastLookup = useRef('');
   const postalCodeRevision = useRef(0);
 
   function changeField(name: AddressKey, value: string) {
@@ -37,8 +36,7 @@ export function CepAddressFields({ fetcher = fetch, errors, fieldProps, inputErr
   }
 
   async function lookup(postalCode: string, revision: number) {
-    if (postalCode.length !== 8 || postalCode === lastLookup.current) return;
-    lastLookup.current = postalCode;
+    if (postalCode.length !== 8) return;
     setLookupError('');
     try {
       const response = await fetcher(`/api/cep/${postalCode}`);

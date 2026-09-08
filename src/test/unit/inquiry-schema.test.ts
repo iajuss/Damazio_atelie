@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { validateInquiryInput } from '@/features/inquiries/schema';
 import type { CatalogProduct } from '@/features/catalog/types';
+import type { InquiryInput } from '@/features/inquiries/types';
 
 const product: CatalogProduct = {
   id: 'product-1', lineSlug: 'enxovais', slug: 'toalha-bordada', name: 'Toalha bordada',
@@ -42,6 +43,15 @@ describe('validação de solicitação', () => {
         street: 'Avenida Paulista', addressNumber: '1578', complement: 'ap. 12',
         neighborhood: 'Bela Vista', city: 'São Paulo', state: 'SP',
       },
+    });
+  });
+
+  it('aceita complemento omitido e o persiste como texto normalizado vazio', () => {
+    const { complement: _complement, ...inputWithoutComplement }: InquiryInput = validInput();
+
+    expect(validateInquiryInput(inputWithoutComplement, product)).toMatchObject({
+      success: true,
+      data: { complement: '' },
     });
   });
 

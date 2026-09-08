@@ -12,7 +12,7 @@ export type InquiryInput = {
   postalCode: string;
   street: string;
   addressNumber: string;
-  complement: string;
+  complement?: string;
   neighborhood: string;
   city: string;
   state: string;
@@ -23,11 +23,12 @@ export type InquiryInput = {
   attachments: File[];
 };
 
-export type ValidInquiryInput = Omit<InquiryInput, 'occasion' | 'description' | 'productSlug' | 'requestKind'> & {
+export type ValidInquiryInput = Omit<InquiryInput, 'occasion' | 'description' | 'productSlug' | 'requestKind' | 'complement'> & {
   requestKind: InquiryKind;
   productSlug: string | null;
   occasion: string | null;
   description: string | null;
+  complement: string;
 };
 
 export type InquiryResult = {

@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getLeadEmailConfig, sendLeadEmail, type QueuedLeadNotification } from './lead-email';
+import { getLeadEmailConfig, parseQueuedLeadNotification, sendLeadEmail, type QueuedLeadNotification } from './lead-email';
 
 type UnknownQueuedNotification = { recipientKind: 'unknown'; payload: unknown };
 type NotificationRow = { id: string; notification: QueuedLeadNotification | UnknownQueuedNotification };
@@ -30,10 +30,8 @@ function notificationRepository(): NotificationRepository {
       return rows.map((row) => {
         const item = row as { notification_id: unknown; recipient_kind: unknown; payload: unknown };
         if (typeof item.notification_id !== 'string') return null;
-        if (item.recipient_kind === 'atelier' || item.recipient_kind === 'customer') {
-          return { id: item.notification_id, notification: { recipientKind: item.recipient_kind, payload: item.payload } as QueuedLeadNotification };
-        }
-        return { id: item.notification_id, notification: { recipientKind: 'unknown', payload: item.payload } };
+        const notification = parseQueuedLeadNotification(item.recipient_kind, item.payload);
+        return { id: item.notification_id, notification: notification ?? { recipientKind: 'unknown', payload: item.payload } };
       }).filter((row): row is NotificationRow => row !== null);
     },
     async markSent(id) {

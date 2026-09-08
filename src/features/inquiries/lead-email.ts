@@ -43,6 +43,102 @@ export type LeadEmailConfig = {
 type MailEnvironment = Record<string, string | undefined>;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const safeRequestCodePattern = /^[A-Za-z0-9-]+$/;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function requiredText(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function optionalText(record: Record<string, unknown>, key: string): string | undefined {
+  if (!(key in record)) return '';
+  const value = record[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+function nullableText(record: Record<string, unknown>, key: string): string | null | undefined {
+  if (!(key in record) || record[key] === null) return null;
+  return typeof record[key] === 'string' ? record[key] : undefined;
+}
+
+function normalizedRequestCode(record: Record<string, unknown>): string | null {
+  const requestCode = requiredText(record, 'requestCode');
+  return requestCode && safeRequestCodePattern.test(requestCode) ? requestCode : null;
+}
+
+function normalizeAnswers(value: unknown): Record<string, string> | null {
+  if (!isRecord(value)) return null;
+  const entries = Object.entries(value);
+  if (entries.some(([key, answer]) => !key || typeof answer !== 'string')) return null;
+  return Object.fromEntries(entries) as Record<string, string>;
+}
+
+function normalizeAttachments(value: unknown): AtelierNotificationPayload['attachments'] | null {
+  if (!Array.isArray(value)) return null;
+  const attachments: AtelierNotificationPayload['attachments'] = [];
+  for (const item of value) {
+    if (!isRecord(item) || typeof item.filename !== 'string' || typeof item.mimeType !== 'string'
+      || typeof item.byteSize !== 'number' || !Number.isSafeInteger(item.byteSize) || item.byteSize < 0) return null;
+    attachments.push({ filename: item.filename, mimeType: item.mimeType, byteSize: item.byteSize });
+  }
+  return attachments;
+}
+
+function normalizeAtelierPayload(value: unknown): AtelierNotificationPayload | null {
+  if (!isRecord(value)) return null;
+  const requestCode = normalizedRequestCode(value);
+  const name = requiredText(value, 'name');
+  const contact = requiredText(value, 'contact');
+  const city = requiredText(value, 'city');
+  const state = requiredText(value, 'state');
+  const requestKind = value.requestKind;
+  const productName = nullableText(value, 'productName');
+  const occasion = nullableText(value, 'occasion');
+  const description = nullableText(value, 'description');
+  const email = optionalText(value, 'email');
+  const phone = optionalText(value, 'phone');
+  const postalCode = optionalText(value, 'postalCode');
+  const street = optionalText(value, 'street');
+  const addressNumber = optionalText(value, 'addressNumber');
+  const complement = optionalText(value, 'complement');
+  const neighborhood = optionalText(value, 'neighborhood');
+  const answers = normalizeAnswers(value.answers);
+  const attachments = normalizeAttachments(value.attachments);
+  if (!requestCode || !name || !contact || !city || !state || (requestKind !== 'product' && requestKind !== 'custom')
+    || productName === undefined || occasion === undefined || description === undefined
+    || email === undefined || phone === undefined || postalCode === undefined || street === undefined
+    || addressNumber === undefined || complement === undefined || neighborhood === undefined || !answers || !attachments) return null;
+
+  return {
+    requestCode, requestKind, productName, name, contact,
+    email: email || (emailPattern.test(contact) ? contact : ''), phone, postalCode, street, addressNumber, complement, neighborhood,
+    city, state, occasion, description, answers, attachments,
+  };
+}
+
+function normalizeCustomerPayload(value: unknown): CustomerNotificationPayload | null {
+  if (!isRecord(value)) return null;
+  const requestCode = normalizedRequestCode(value);
+  const name = requiredText(value, 'name');
+  const email = requiredText(value, 'email');
+  return requestCode && name && email && emailPattern.test(email) ? { requestCode, name, email } : null;
+}
+
+export function parseQueuedLeadNotification(recipientKind: unknown, payload: unknown): QueuedLeadNotification | null {
+  if (recipientKind === 'atelier') {
+    const normalized = normalizeAtelierPayload(payload);
+    return normalized ? { recipientKind, payload: normalized } : null;
+  }
+  if (recipientKind === 'customer') {
+    const normalized = normalizeCustomerPayload(payload);
+    return normalized ? { recipientKind, payload: normalized } : null;
+  }
+  return null;
+}
 
 function requiredValue(environment: MailEnvironment, name: keyof MailEnvironment): string {
   const value = environment[name]?.trim();

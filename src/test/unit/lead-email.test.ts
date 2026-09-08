@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
-import { buildLeadEmail, getLeadEmailConfig, type AtelierNotificationPayload, type CustomerNotificationPayload } from '@/features/inquiries/lead-email';
+import { buildLeadEmail, getLeadEmailConfig, parseQueuedLeadNotification, type AtelierNotificationPayload, type CustomerNotificationPayload } from '@/features/inquiries/lead-email';
 
 const atelierPayload: AtelierNotificationPayload = {
   requestCode: 'AB12CD34EF56GH78IJ90',
@@ -71,6 +71,27 @@ describe('e-mail de lead', () => {
     for (const forbidden of ['11999999999', 'Praça da Sé', 'Sala 2', 'Presente', 'toalha azul', 'referencia.png', 'atendimento@damazio.example']) {
       expect(email.text).not.toContain(forbidden);
     }
+  });
+
+  it('normaliza uma notificação histórica do ateliê sem campos de endereço novos', () => {
+    const historical = parseQueuedLeadNotification('atelier', {
+      requestCode: 'AB12CD34EF56GH78IJ90', requestKind: 'product', productName: 'Toalha bordada',
+      name: 'Ana', contact: 'ana@example.com', city: 'São Paulo', state: 'SP', occasion: null,
+      description: 'Quero uma toalha azul.', answers: {}, attachments: [],
+    });
+
+    expect(historical).toMatchObject({ recipientKind: 'atelier', payload: {
+      email: 'ana@example.com', phone: '', postalCode: '', street: '', addressNumber: '', complement: '', neighborhood: '',
+    } });
+    if (!historical || historical.recipientKind !== 'atelier') throw new Error('Expected atelier notification');
+    const email = buildLeadEmail(historical, { smtpUser: 'user', smtpAppPassword: 'pass', from: 'from@example.com', to: 'to@example.com' });
+    expect(email.replyTo).toBe('ana@example.com');
+    expect(email.text).not.toContain('undefined');
+  });
+
+  it('rejeita payloads conhecidos malformados antes de qualquer envio', () => {
+    expect(parseQueuedLeadNotification('customer', { requestCode: 'AB12', name: 'Ana', email: 'not-an-email' })).toBeNull();
+    expect(parseQueuedLeadNotification('atelier', { ...atelierPayload, attachments: [{ filename: 'a.png', mimeType: 'image/png', byteSize: '8' }] })).toBeNull();
   });
 
   it('exige todas as credenciais do Gmail apenas no servidor', () => {

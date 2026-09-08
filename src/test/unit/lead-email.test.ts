@@ -40,6 +40,7 @@ describe('e-mail de lead', () => {
     vi.stubEnv('LEAD_NOTIFICATION_TO', 'damazioatelier@gmail.com');
 
     const email = buildLeadEmail({ recipientKind: 'atelier', payload: atelierPayload });
+    const retry = buildLeadEmail({ recipientKind: 'atelier', payload: atelierPayload });
 
     expect(email).toMatchObject({
       to: 'damazioatelier@gmail.com',
@@ -51,6 +52,8 @@ describe('e-mail de lead', () => {
     expect(email.text).not.toContain('private-file.png');
     expect(email.text).toContain('Telefone: 11999999999');
     expect(email.text).toContain('Endereço: Praça da Sé, 1 - Sala 2');
+    expect(email.messageId).toBe(retry.messageId);
+    expect(email.messageId).toBe('<atelier-ab12cd34ef56gh78ij90@damazio-atelier.invalid>');
   });
 
   it('envia confirmação mínima exclusivamente ao e-mail da cliente, com o protocolo', () => {

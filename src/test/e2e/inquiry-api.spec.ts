@@ -6,7 +6,22 @@ const product: CatalogProduct = { id: 'product-1', lineSlug: 'enxovais', slug: '
 
 function form(overrides: Record<string, string | File> = {}) {
   const data = new FormData();
-  Object.entries({ productSlug: 'toalha-bordada', name: 'Ana', contact: 'ana@example.com', city: 'São Paulo', state: 'SP', privacyAccepted: 'true', ...overrides }).forEach(([key, value]) => data.set(key, value));
+  Object.entries({
+    productSlug: 'toalha-bordada',
+    name: 'Ana',
+    contact: 'ana@example.com',
+    email: 'ana@example.com',
+    phone: '11999999999',
+    postalCode: '01001000',
+    street: 'Praça da Sé',
+    addressNumber: '1',
+    complement: '',
+    neighborhood: 'Sé',
+    city: 'São Paulo',
+    state: 'SP',
+    privacyAccepted: 'true',
+    ...overrides,
+  }).forEach(([key, value]) => data.set(key, value));
   return data;
 }
 

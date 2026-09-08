@@ -35,6 +35,7 @@ export function isTrustedOrigin(request: Request, allowedOrigins: readonly strin
 
 export function requestClientKey(request: Request, acceptsProxyHeaders: boolean): string {
   if (!acceptsProxyHeaders) return 'anonymous';
-  const address = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  const address = request.headers.get('x-vercel-forwarded-for')?.trim()
+    || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
   return address && /^[0-9a-f:.]{3,45}$/i.test(address) ? address : 'anonymous';
 }

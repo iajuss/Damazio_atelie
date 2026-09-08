@@ -19,10 +19,11 @@ const MAX_ANSWERS_JSON_LENGTH = 16_384;
 const MAX_ANSWER_FIELDS = 20;
 const MAX_ANSWER_KEY_LENGTH = 64;
 const MAX_ANSWER_VALUE_LENGTH = 4_000;
+const MAX_INQUIRY_BODY_BYTES = 16 * 1024 * 1024;
 
 const privateResponseHeaders = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow, noarchive' };
 
-function errorResponse(status: 400 | 404 | 413 | 429 | 500, code: string, message: string, fields?: Record<string, string>): Response {
+function errorResponse(status: 400 | 404 | 413 | 415 | 429 | 500, code: string, message: string, fields?: Record<string, string>): Response {
   return Response.json({ error: { code, message, ...(fields ? { fields } : {}) } }, { status, headers: privateResponseHeaders });
 }
 
@@ -56,9 +57,13 @@ function parseInput(data: FormData): InquiryInput | null {
   };
 }
 
-function internalFailureDetails(error: unknown): { name: string; message: string } {
-  if (error instanceof Error) return { name: error.name, message: error.message.slice(0, 200) };
-  return { name: 'UnknownError', message: 'Unknown inquiry submission failure.' };
+function isMultipartFormData(request: Request): boolean {
+  return request.headers.get('content-type')?.toLowerCase().startsWith('multipart/form-data;') ?? false;
+}
+
+function declaredBodyIsTooLarge(request: Request): boolean {
+  const contentLength = Number(request.headers.get('content-length'));
+  return Number.isSafeInteger(contentLength) && contentLength > MAX_INQUIRY_BODY_BYTES;
 }
 
 export function createInquiryPostHandler(dependencies: InquiryHandlerDependencies = {}) {
@@ -70,6 +75,8 @@ export function createInquiryPostHandler(dependencies: InquiryHandlerDependencie
     let stage: 'read_form' | 'load_product' | 'persist_inquiry' = 'read_form';
 
     try {
+      if (!isMultipartFormData(request)) return errorResponse(415, 'TIPO_DE_CONTEUDO', 'Envie o formulário no formato esperado.');
+      if (declaredBodyIsTooLarge(request)) return errorResponse(413, 'ARQUIVO_MUITO_GRANDE', 'A referência excede o limite permitido.');
       const data = await request.formData();
       if (asText(data, 'website')) return errorResponse(400, 'VALIDACAO', 'Não foi possível validar o envio.');
       const input = parseInput(data);
@@ -95,7 +102,7 @@ export function createInquiryPostHandler(dependencies: InquiryHandlerDependencie
         if (submission.kind === 'validation') return errorResponse(400, 'VALIDACAO', 'Confira os campos informados.', submission.errors);
         if (submission.kind === 'payload_too_large') return errorResponse(413, 'ARQUIVO_MUITO_GRANDE', 'A referência excede o limite permitido.', submission.errors);
       }
-      console.error('inquiry_submission_failed', { stage, ...internalFailureDetails(error) });
+      console.error('inquiry_submission_failed', { stage });
       return errorResponse(500, 'ERRO_INTERNO', 'Não foi possível enviar a solicitação. Tente novamente em instantes.');
     }
   };

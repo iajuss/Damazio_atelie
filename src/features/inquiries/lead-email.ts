@@ -170,6 +170,12 @@ function fullAddress(payload: AtelierNotificationPayload): string {
   return `${payload.street}, ${payload.addressNumber}${payload.complement ? ` - ${payload.complement}` : ''}`;
 }
 
+function notificationMessageId(notification: QueuedLeadNotification): string {
+  const requestCode = notification.payload.requestCode;
+  if (!safeRequestCodePattern.test(requestCode)) throw new Error('Notificação de e-mail inválida.');
+  return `<${notification.recipientKind}-${requestCode.toLowerCase()}@damazio-atelier.invalid>`;
+}
+
 export function buildLeadEmail(notification: QueuedLeadNotification, config: LeadEmailConfig = getLeadEmailConfig()) {
   if (notification.recipientKind === 'customer') {
     const { payload } = notification;
@@ -177,6 +183,7 @@ export function buildLeadEmail(notification: QueuedLeadNotification, config: Lea
       from: config.from,
       to: payload.email,
       subject: `[Damazio] Recebemos sua solicitação ${payload.requestCode}`,
+      messageId: notificationMessageId(notification),
       text: [
         `Olá, ${payload.name}.`,
         '',
@@ -220,6 +227,7 @@ export function buildLeadEmail(notification: QueuedLeadNotification, config: Lea
     from: config.from,
     to: config.to,
     subject: `[Damazio] Nova solicitação ${payload.requestCode}`,
+    messageId: notificationMessageId(notification),
     text,
     ...(emailPattern.test(payload.email) ? { replyTo: payload.email } : {}),
   };

@@ -7,6 +7,13 @@ export type InquiryInput = {
   productSlug: string;
   name: string;
   contact: string;
+  email: string;
+  phone: string;
+  postalCode: string;
+  street: string;
+  addressNumber: string;
+  complement: string;
+  neighborhood: string;
   city: string;
   state: string;
   occasion?: string;

@@ -13,7 +13,8 @@ const product: CatalogProduct = {
 
 function validInput(overrides: Record<string, unknown> = {}) {
   return {
-    productSlug: 'toalha-bordada', name: '  Ana   Silva ', contact: ' ana@example.com ', city: ' São Paulo ',
+    productSlug: 'toalha-bordada', name: '  Ana   Silva ', contact: ' ana@example.com ', email: 'ana@example.com', phone: '11910771179',
+    postalCode: '01310100', street: 'Avenida Paulista', addressNumber: '1578', complement: '', neighborhood: 'Bela Vista', city: ' São Paulo ',
     state: 'sp', privacyAccepted: true, answers: { nome_bordado: '  Ana  ' }, attachments: [], ...overrides,
   };
 }
@@ -28,6 +29,26 @@ describe('validação de solicitação', () => {
       }),
     });
   });
+
+  it('normaliza telefone, e-mail e endereço completo', () => {
+    expect(validateInquiryInput(validInput({
+      email: ' ANA@EXAMPLE.COM ', phone: '(11) 91077-1179', postalCode: '01310-100',
+      street: '  Avenida Paulista ', addressNumber: ' 1578 ', complement: ' ap. 12 ',
+      neighborhood: ' Bela Vista ', city: ' São Paulo ', state: 'sp',
+    }), product)).toMatchObject({
+      success: true,
+      data: {
+        email: 'ana@example.com', phone: '11910771179', postalCode: '01310100',
+        street: 'Avenida Paulista', addressNumber: '1578', complement: 'ap. 12',
+        neighborhood: 'Bela Vista', city: 'São Paulo', state: 'SP',
+      },
+    });
+  });
+
+  it.each(['email', 'phone', 'postalCode', 'street', 'addressNumber', 'neighborhood'])(
+    'rejeita %s ausente ou inválido',
+    (field) => expect(validateInquiryInput(validInput({ [field]: '' }), product)).toMatchObject({ success: false }),
+  );
 
   it('aceita uma criação livre com ideia e sem inspiração selecionada', () => {
     expect(validateInquiryInput(validInput({ requestKind: 'custom', productSlug: '', description: 'Uma bolsa com flores bordadas', answers: {} }), null)).toEqual({

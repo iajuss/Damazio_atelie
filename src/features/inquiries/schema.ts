@@ -3,6 +3,7 @@ import type { InquiryInput, InquiryKind, InquiryValidation, ValidInquiryInput } 
 
 const limits = { name: 160, contact: 200, city: 120, occasion: 160, description: 4000, answer: 4000 } as const;
 const answerKeyPattern = /^[a-z][a-z0-9_]{0,63}$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const maxAnswerFields = 20;
 
 function normalize(value: unknown): string {
@@ -28,6 +29,13 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   const errors: Record<string, string> = {};
   const name = normalize(input.name);
   const contact = normalize(input.contact);
+  const email = normalize(input.email).toLowerCase();
+  const phone = normalize(input.phone).replace(/\D/g, '');
+  const postalCode = normalize(input.postalCode).replace(/\D/g, '');
+  const street = normalize(input.street);
+  const addressNumber = normalize(input.addressNumber);
+  const complement = normalize(input.complement);
+  const neighborhood = normalize(input.neighborhood);
   const city = normalize(input.city);
   const state = normalize(input.state).toUpperCase();
   const occasion = normalize(input.occasion);
@@ -38,6 +46,12 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
 
   validateRequired(errors, 'name', name);
   validateRequired(errors, 'contact', contact);
+  if (!emailPattern.test(email)) errors.email = 'Informe um e-mail válido.';
+  if (phone.length < 10 || phone.length > 11) errors.phone = 'Informe um telefone válido.';
+  if (!/^\d{8}$/.test(postalCode)) errors.postalCode = 'Informe um CEP com oito dígitos.';
+  if (!street) errors.street = 'Este campo é obrigatório.';
+  if (!addressNumber) errors.addressNumber = 'Este campo é obrigatório.';
+  if (!neighborhood) errors.neighborhood = 'Este campo é obrigatório.';
   validateRequired(errors, 'city', city);
   if (!/^[A-Z]{2}$/.test(state)) errors.state = 'Informe a sigla do estado com duas letras.';
   if (!input.privacyAccepted) errors.privacyAccepted = 'É necessário aceitar a política de privacidade para enviar a solicitação.';
@@ -79,7 +93,8 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   if (Object.keys(errors).length > 0) return { success: false, errors };
 
   const data: ValidInquiryInput = {
-    requestKind, productSlug: requestKind === 'custom' ? null : normalizedProductSlug, name, contact, city, state, occasion: occasion || null,
+    requestKind, productSlug: requestKind === 'custom' ? null : normalizedProductSlug, name, contact, email, phone, postalCode, street,
+    addressNumber, complement, neighborhood, city, state, occasion: occasion || null,
     description: description || null, answers, privacyAccepted: true, attachments: input.attachments,
   };
   return { success: true, data };

@@ -28,7 +28,7 @@ test('aceita multipart válido e retorna somente o protocolo público', async ()
   await expect(response.json()).resolves.toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
   expect(response.status).toBe(201);
   expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow, noarchive');
-  expect(deliveries).toEqual([{ requestCode: 'AB12CD34EF56GH78IJ90', limit: 1 }]);
+  expect(deliveries).toEqual([{ requestCode: 'AB12CD34EF56GH78IJ90', limit: 2 }]);
 });
 
 test('confirma a solicitação mesmo quando a notificação imediata falha', async () => {

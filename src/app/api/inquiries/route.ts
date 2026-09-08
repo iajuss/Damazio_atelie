@@ -84,7 +84,7 @@ export function createInquiryPostHandler(dependencies: InquiryHandlerDependencie
       const result = await saveInquiry(input, product);
       const deliverNotifications = dependencies.deliverNotifications ?? (await import('@/features/inquiries/lead-notifications')).deliverLeadNotifications;
       try {
-        await deliverNotifications({ requestCode: result.requestCode, limit: 1 });
+        await deliverNotifications({ requestCode: result.requestCode, limit: 2 });
       } catch {
         // O lead já foi persistido de forma atômica e será recuperado pelo cron protegido.
       }

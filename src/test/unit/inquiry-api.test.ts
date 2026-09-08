@@ -27,7 +27,7 @@ describe('notificação imediata da solicitação', () => {
 
     expect(response.status).toBe(201);
     await expect(response.json()).resolves.toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
-    expect(deliveries).toEqual([{ requestCode: 'AB12CD34EF56GH78IJ90', limit: 1 }]);
+    expect(deliveries).toEqual([{ requestCode: 'AB12CD34EF56GH78IJ90', limit: 2 }]);
   });
 
   it('preserva a confirmação quando o e-mail falha', async () => {

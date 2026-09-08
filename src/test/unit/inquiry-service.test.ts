@@ -12,7 +12,11 @@ const product: CatalogProduct = {
 };
 
 function input(overrides: Record<string, unknown> = {}) {
-  return { productSlug: product.slug, name: 'Ana', contact: 'ana@example.com', city: 'São Paulo', state: 'SP', privacyAccepted: true, answers: {}, attachments: [], ...overrides };
+  return {
+    productSlug: product.slug, name: 'Ana', contact: 'ana@example.com', email: 'ana@example.com', phone: '11999999999', postalCode: '01001000',
+    street: 'Praça da Sé', addressNumber: '1', complement: 'Sala 2', neighborhood: 'Sé', city: 'São Paulo', state: 'SP',
+    privacyAccepted: true, answers: {}, attachments: [], ...overrides,
+  };
 }
 
 function pngFile(name = 'referencia.png', size = 8) {
@@ -32,16 +36,20 @@ describe('persistência de solicitação', () => {
     });
 
     expect(result).toEqual({ requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' });
-    expect(calls).toEqual([[ 'create_inquiry_with_answers', expect.objectContaining({
+    expect(calls).toEqual([[ 'create_inquiry_with_contact_details', expect.objectContaining({
       p_request_code: 'AB12CD34EF56GH78IJ90',
       p_product_id: 'product-1',
+      p_contact: 'ana@example.com', p_email: 'ana@example.com', p_phone: '11999999999', p_postal_code: '01001000',
+      p_street: 'Praça da Sé', p_address_number: '1', p_complement: 'Sala 2', p_neighborhood: 'Sé',
       p_attachments: [expect.objectContaining({ mime_type: 'image/png', byte_size: 8 })],
-      p_notification_payload: {
+      p_atelier_notification_payload: {
         requestCode: 'AB12CD34EF56GH78IJ90',
         requestKind: 'product',
         productName: 'Toalha bordada',
         name: 'Ana',
         contact: 'ana@example.com',
+        email: 'ana@example.com', phone: '11999999999', postalCode: '01001000', street: 'Praça da Sé',
+        addressNumber: '1', complement: 'Sala 2', neighborhood: 'Sé',
         city: 'São Paulo',
         state: 'SP',
         occasion: null,
@@ -49,6 +57,7 @@ describe('persistência de solicitação', () => {
         answers: {},
         attachments: [{ filename: 'referencia.png', mimeType: 'image/png', byteSize: 8 }],
       },
+      p_customer_notification_payload: { requestCode: 'AB12CD34EF56GH78IJ90', name: 'Ana', email: 'ana@example.com' },
     }) ]]);
     expect(uploads).toEqual([[expect.stringMatching(/^AB12CD34EF56GH78IJ90\/[0-9a-f-]{36}\.png$/), 'referencia.png', { contentType: 'image/png', upsert: false }]]);
   });
@@ -59,7 +68,7 @@ describe('persistência de solicitação', () => {
       createRequestCode: () => 'AB12CD34EF56GH78IJ90',
       client: { rpc: async (name, payload) => { calls.push([name, payload]); return { data: { inquiry_id: 'inquiry-1' }, error: null }; }, storage: { from: () => ({ upload: async () => ({ error: null }), remove: async () => ({ error: null }) }) } },
     });
-    expect(calls).toEqual([[ 'create_inquiry_with_answers', expect.objectContaining({ p_request_kind: 'custom', p_product_id: null, p_answers: {} }) ]]);
+    expect(calls).toEqual([[ 'create_inquiry_with_contact_details', expect.objectContaining({ p_request_kind: 'custom', p_product_id: null, p_answers: {} }) ]]);
   });
 
   it('aceita o identificador retornado em lista pela função RPC do Supabase', async () => {

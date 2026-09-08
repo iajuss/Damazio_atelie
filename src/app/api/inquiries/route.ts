@@ -48,8 +48,10 @@ function parseInput(data: FormData): InquiryInput | null {
   if (requestKind !== 'product' && requestKind !== 'custom') return null;
   return {
     requestKind: requestKind as InquiryKind,
-    productSlug: normalizeProductSlug(asText(data, 'productSlug')), name: asText(data, 'name'), contact: asText(data, 'contact'), city: asText(data, 'city'),
-    state: asText(data, 'state'), occasion: asText(data, 'occasion'), description: asText(data, 'description'), answers,
+    productSlug: normalizeProductSlug(asText(data, 'productSlug')), name: asText(data, 'name'), email: asText(data, 'email'),
+    contact: asText(data, 'email'), phone: asText(data, 'phone'), postalCode: asText(data, 'postalCode'), street: asText(data, 'street'),
+    addressNumber: asText(data, 'addressNumber'), complement: asText(data, 'complement'), neighborhood: asText(data, 'neighborhood'),
+    city: asText(data, 'city'), state: asText(data, 'state'), occasion: asText(data, 'occasion'), description: asText(data, 'description'), answers,
     privacyAccepted: asText(data, 'privacyAccepted') === 'true', attachments: data.getAll('attachments').filter((value): value is File => typeof value !== 'string'),
   };
 }

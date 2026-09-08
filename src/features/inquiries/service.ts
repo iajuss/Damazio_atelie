@@ -13,7 +13,7 @@ type StorageBucket = {
 };
 
 export type InquiryServerClient = {
-  rpc: (name: 'create_inquiry_with_answers', payload: Record<string, unknown>) => Promise<{ data: { inquiry_id: string } | Array<{ inquiry_id: string }> | null; error: unknown | null }>;
+  rpc: (name: 'create_inquiry_with_contact_details', payload: Record<string, unknown>) => Promise<{ data: { inquiry_id: string } | Array<{ inquiry_id: string }> | null; error: unknown | null }>;
   storage: { from: (bucket: typeof INQUIRY_REFERENCES_BUCKET) => StorageBucket };
 };
 
@@ -60,28 +60,40 @@ export async function createInquiry(input: InquiryInput, product: CatalogProduct
     }
 
     stage = 'persistence';
-    const persisted = await client.rpc('create_inquiry_with_answers', {
+    const atelierNotificationPayload = {
+      requestCode,
+      requestKind: validation.data.requestKind,
+      productName: product?.name ?? null,
+      name: validation.data.name,
+      contact: validation.data.contact,
+      email: validation.data.email,
+      phone: validation.data.phone,
+      postalCode: validation.data.postalCode,
+      street: validation.data.street,
+      addressNumber: validation.data.addressNumber,
+      complement: validation.data.complement,
+      neighborhood: validation.data.neighborhood,
+      city: validation.data.city,
+      state: validation.data.state,
+      occasion: validation.data.occasion,
+      description: validation.data.description,
+      answers: validation.data.answers,
+      attachments: attachmentRows.map(({ original_filename, mime_type, byte_size }) => ({
+        filename: original_filename,
+        mimeType: mime_type,
+        byteSize: byte_size,
+      })),
+    };
+    const customerNotificationPayload = { requestCode, name: validation.data.name, email: validation.data.email };
+    const persisted = await client.rpc('create_inquiry_with_contact_details', {
       p_request_code: requestCode, p_product_id: product?.id ?? null, p_request_kind: validation.data.requestKind, p_name: validation.data.name, p_contact: validation.data.contact,
+      p_email: validation.data.email, p_phone: validation.data.phone, p_postal_code: validation.data.postalCode, p_street: validation.data.street,
+      p_address_number: validation.data.addressNumber, p_complement: validation.data.complement, p_neighborhood: validation.data.neighborhood,
       p_city: validation.data.city, p_state: validation.data.state, p_occasion: validation.data.occasion,
       p_description: validation.data.description, p_privacy_accepted_at: new Date().toISOString(), p_answers: validation.data.answers,
       p_attachments: attachmentRows,
-      p_notification_payload: {
-        requestCode,
-        requestKind: validation.data.requestKind,
-        productName: product?.name ?? null,
-        name: validation.data.name,
-        contact: validation.data.contact,
-        city: validation.data.city,
-        state: validation.data.state,
-        occasion: validation.data.occasion,
-        description: validation.data.description,
-        answers: validation.data.answers,
-        attachments: attachmentRows.map(({ original_filename, mime_type, byte_size }) => ({
-          filename: original_filename,
-          mimeType: mime_type,
-          byteSize: byte_size,
-        })),
-      },
+      p_atelier_notification_payload: atelierNotificationPayload,
+      p_customer_notification_payload: customerNotificationPayload,
     });
     if (persisted.error) throw persisted.error;
     if (!inquiryIdFromRpcData(persisted.data)) throw new Error('The inquiry RPC did not return an identifier.');

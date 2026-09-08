@@ -16,7 +16,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
   return {
     productSlug: 'toalha-bordada', name: '  Ana   Silva ', contact: ' ana@example.com ', email: 'ana@example.com', phone: '11910771179',
     postalCode: '01310100', street: 'Avenida Paulista', addressNumber: '1578', complement: '', neighborhood: 'Bela Vista', city: ' São Paulo ',
-    state: 'sp', privacyAccepted: true, answers: { nome_bordado: '  Ana  ' }, attachments: [], ...overrides,
+    state: 'sp', description: 'Uma peça especial', privacyAccepted: true, answers: { nome_bordado: '  Ana  ' }, attachments: [], ...overrides,
   };
 }
 
@@ -73,6 +73,12 @@ describe('validação de solicitação', () => {
     });
     expect(validateInquiryInput(validInput({ requestKind: 'custom', productSlug: '', description: 'Uma criação especial', answers: { nome_bordado: 'Ana' } }), null)).toMatchObject({
       success: false, errors: { answers: expect.any(String) },
+    });
+  });
+
+  it('exige a descrição também para uma solicitação de peça', () => {
+    expect(validateInquiryInput(validInput({ description: '' }), product)).toMatchObject({
+      success: false, errors: { description: 'Conte a sua ideia para continuar.' },
     });
   });
 

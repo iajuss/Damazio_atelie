@@ -15,7 +15,7 @@ function input(overrides: Record<string, unknown> = {}) {
   return {
     productSlug: product.slug, name: 'Ana', contact: 'ana@example.com', email: 'ana@example.com', phone: '11999999999', postalCode: '01001000',
     street: 'Praça da Sé', addressNumber: '1', complement: 'Sala 2', neighborhood: 'Sé', city: 'São Paulo', state: 'SP',
-    privacyAccepted: true, answers: {}, attachments: [], ...overrides,
+    description: 'Uma peça especial', privacyAccepted: true, answers: {}, attachments: [], ...overrides,
   };
 }
 
@@ -53,7 +53,7 @@ describe('persistência de solicitação', () => {
         city: 'São Paulo',
         state: 'SP',
         occasion: null,
-        description: null,
+        description: 'Uma peça especial',
         answers: {},
         attachments: [{ filename: 'referencia.png', mimeType: 'image/png', byteSize: 8 }],
       },

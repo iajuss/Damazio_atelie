@@ -13,6 +13,7 @@ async function fillRequiredFields(page: import('@playwright/test').Page) {
   await expect(page.getByRole('textbox', { name: /bairro/i })).toHaveValue('Sé');
   await expect(page.getByRole('textbox', { name: /cidade/i })).toHaveValue('São Paulo');
   await expect(page.getByRole('textbox', { name: /estado/i })).toHaveValue('SP');
+  await page.getByRole('textbox', { name: /conte um pouco mais sobre sua ideia/i }).fill('Uma peça com significado.');
   await page.getByRole('checkbox', { name: /política de privacidade/i }).check();
 }
 

@@ -63,8 +63,9 @@ export function validateInquiryInput(input: InquiryInput, product: CatalogProduc
   }
 
   const normalizedProductSlug = normalizeProductSlug(input.productSlug);
+  if (!description) errors.description = 'Conte a sua ideia para continuar.';
+
   if (requestKind === 'custom') {
-    if (!description) errors.description = 'Conte a sua ideia para continuar.';
     if (normalizedProductSlug) errors.productSlug = 'Confira a criação informada.';
     if (answerEntries.length > 0) errors.answers = 'Confira os campos de personalização informados.';
   } else if (!product || product.slug !== normalizedProductSlug) {

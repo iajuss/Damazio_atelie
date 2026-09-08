@@ -8,7 +8,7 @@ function request(overrides: Record<string, string> = {}) {
   const data = new FormData();
   for (const [key, value] of Object.entries({
     productSlug: 'toalha-bordada', name: 'Ana', contact: 'forjado@example.com', email: 'ana@example.com', phone: '11999999999',
-    postalCode: '01001000', street: 'Praça da Sé', addressNumber: '1', complement: '', neighborhood: 'Sé', city: 'São Paulo', state: 'SP', privacyAccepted: 'true',
+    postalCode: '01001000', street: 'Praça da Sé', addressNumber: '1', complement: '', neighborhood: 'Sé', city: 'São Paulo', state: 'SP', description: 'Uma peça especial', privacyAccepted: 'true',
     ...overrides,
   })) data.set(key, value);
   return new Request('https://damazio.example/api/inquiries', { method: 'POST', headers: { origin: 'https://damazio.example' }, body: data });

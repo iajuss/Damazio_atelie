@@ -24,6 +24,7 @@ function fillContactAndAddress() {
   fireEvent.change(screen.getByRole('textbox', { name: /bairro/i }), { target: { value: 'Sé' } });
   fireEvent.change(screen.getByRole('textbox', { name: /cidade/i }), { target: { value: 'São Paulo' } });
   fireEvent.change(screen.getByRole('textbox', { name: /estado/i }), { target: { value: 'SP' } });
+  fireEvent.change(screen.getByRole('textbox', { name: /conte um pouco mais sobre sua ideia/i }), { target: { value: 'Uma criação com significado.' } });
 }
 
 describe('InquiryForm', () => {
@@ -103,7 +104,7 @@ describe('InquiryForm', () => {
   it('pede a ideia e envia uma criação livre sem inspiração', async () => {
     const fetcher = vi.fn().mockResolvedValue(response(201, { requestCode: 'AB12CD34EF56GH78IJ90', message: 'Solicitação registrada com sucesso.' }));
     render(<InquiryForm requestKind="custom" fetcher={fetcher} />);
-    const idea = screen.getByRole('textbox', { name: /conte a sua ideia/i });
+    const idea = screen.getByRole('textbox', { name: /conte um pouco mais sobre sua ideia/i });
     expect(idea).toBeRequired();
     fireEvent.change(screen.getByRole('textbox', { name: /seu nome/i }), { target: { value: 'Ana' } });
     fillContactAndAddress();
@@ -126,6 +127,7 @@ describe('InquiryForm', () => {
     expect(screen.getByRole('group', { name: /endereço para entrega/i })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /cep/i })).toBeRequired();
     expect(screen.getByRole('textbox', { name: /rua|logradouro/i })).toBeRequired();
+    expect(screen.getByRole('textbox', { name: /conte um pouco mais sobre sua ideia/i })).toBeRequired();
   });
 
   it('associa os erros recebidos aos campos e move o foco ao resumo', async () => {
